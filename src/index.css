@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Pastel Blues */
+  --things-blue: #87CEEB;        /* Soft Sky Blue */
+  --things-blue-hover: #6495ED;  /* Muted Royal Blue for hover */
+
+  /* Muted Grays with Hierarchy */
+  --things-gray-900: #333333;    /* Very Dark Gray (for main titles, most important text) */
+  --things-gray-800: #555555;    /* Darker Gray */
+  --things-gray-700: #777777;    /* Medium Dark Gray (for task titles, prominent labels) */
+  --things-gray-600: #999999;    /* Medium Gray (for notes, descriptions, secondary text) */
+  --things-gray-500: #BBBBBB;    /* Lighter Gray (for subtle elements, placeholders) */
+  --things-gray-400: #CCCCCC;    /* Even Lighter Gray */
+  --things-gray-300: #DDDDDD;    /* Lightest Gray for borders/dividers */
+  --things-gray-200: #EEEEEE;    /* Very Light Gray for backgrounds */
+  --things-gray-100: #F5F5F5;    /* Off-white for backgrounds, filter elements */
+  --things-gray-50: #FAFAFA;     /* Almost white for main backgrounds */
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--things-gray-900);
+  background: var(--things-gray-50);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Things 3 specific styles */
+.things-sidebar {
+  background: #F5F5F5;
+  border-right: 1px solid var(--things-gray-200);
+}
+
+.things-sidebar-item {
+  @apply flex items-center gap-3 py-1.5 text-sm font-medium transition-all duration-150;
+  color: var(--things-gray-700);
+  margin: 0;
+  border-radius: 0;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.things-sidebar-item:hover {
+  background: var(--things-gray-200);
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.things-sidebar-item.active {
+  background: var(--things-gray-300);
+  color: var(--things-gray-900);
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.things-sidebar-button {
+  @apply flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150;
+  color: var(--things-gray-700);
+  background: var(--things-gray-100);
+}
+
+.things-sidebar-button:hover {
+  background: var(--things-gray-200);
+}
+
+.things-sidebar-section {
+  @apply px-4 py-3 text-xs font-semibold uppercase tracking-wide;
+  color: var(--things-gray-500);
+}
+
+.things-task-item {
+  @apply bg-transparent p-3 mb-1 transition-all duration-150;
+}
+
+.things-task-item:hover {
+  @apply bg-gray-50;
+}
+
+.things-checkbox {
+  @apply w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-150 cursor-pointer;
+  border-color: var(--things-gray-300);
+}
+
+.things-checkbox:hover {
+  border-color: var(--things-blue);
+}
+
+.things-checkbox.completed {
+  background: var(--things-blue);
+  border-color: var(--things-blue);
+}
+
+.things-button-primary {
+  @apply px-3 py-1 rounded text-xs font-medium transition-all duration-150;
+  background: #90B1F6;
+  color: white;
+}
+
+.things-button-primary:hover {
+  background: var(--things-blue-hover);
+}
+
+.things-button-secondary {
+  @apply px-2 py-1 text-xs transition-all duration-150;
+  color: var(--things-gray-500);
+}
+
+.things-button-secondary:hover {
+  color: var(--things-gray-700);
+}
+
+.things-button-secondary:hover {
+  background: var(--things-gray-200);
+}
+
+.things-input {
+  @apply w-full px-0 py-2 border-none bg-transparent text-base outline-none;
+  color: var(--things-gray-900);
+}
+
+.things-input::placeholder {
+  color: var(--things-gray-400);
+}
+
+/* Make selected option values darker */
+.things-input option {
+  color: var(--things-gray-900);
+}
+
+.things-input option:first-child {
+  color: var(--things-gray-500);
+}
+
+.things-input:focus {
+  outline: none;
+  border-color: var(--things-blue);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.things-modal {
+  @apply fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50;
+  backdrop-filter: blur(4px);
+}
+
+.things-modal-content {
+  @apply bg-white rounded-xl shadow-2xl w-full max-w-md;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Priority colors matching Things 3 */
+.priority-high {
+  color: #FF3B30;
+  background: rgba(255, 59, 48, 0.1);
+}
+
+.priority-medium {
+  color: #FF9500;
+  background: rgba(255, 149, 0, 0.1);
+}
+
+.priority-low {
+  color: #34C759;
+  background: rgba(52, 199, 89, 0.1);
+}
+
+/* Tag styles - Content tags (rounded rectangles) */
+.things-tag {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  background: var(--things-gray-100);
+  color: var(--things-gray-600);
+}
+
+/* Interactive filter badges (rounded pills) */
+.things-filter-badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-all;
+}
+
+.things-filter-badge.active {
+  background: var(--things-gray-300);
+  color: var(--things-gray-900);
+}
+
+.things-filter-badge.inactive {
+  background: var(--things-gray-100);
+  color: var(--things-gray-600);
+}
+
+/* Status/count badges (rounded pills) */
+.things-count-badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  background: var(--things-gray-200);
+  color: var(--things-gray-600);
+}
+
+/* Date badges - Information badges (rounded rectangles) */
+.things-date-badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  background: var(--things-gray-100);
+  color: var(--things-gray-600);
+}
+
+.things-date-due {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  background: rgba(255, 59, 48, 0.1);
+  color: #FF3B30;
+}
+
+.things-date-scheduled {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  background: rgba(0, 122, 255, 0.1);
+  color: var(--things-blue);
+}
+
+/* Auth styles */
+.auth-input-field {
+  @apply things-input;
+}
+
+.auth-button {
+  @apply things-button-primary w-full;
+}
