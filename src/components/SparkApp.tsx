@@ -30,6 +30,7 @@ export function SparkApp() {
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showProjectForm, setShowProjectForm] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [showAreaForm, setShowAreaForm] = useState(false);
   const [showQuickEntry, setShowQuickEntry] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -264,6 +265,10 @@ export function SparkApp() {
           setSelectedProjectId(null);
           setCurrentView("inbox");
         }}
+        onProjectEdit={(projectId) => {
+          setEditingProjectId(projectId);
+          setShowProjectForm(true);
+        }}
         onNewProject={() => {
           console.log("New folder/area clicked");
           setShowAreaForm(true);
@@ -365,76 +370,17 @@ export function SparkApp() {
               </svg>
             </button>
 
-            {/* Option 1: Different Lightning */}
+            {/* Option 1: Lightning Arrow */}
             <button
               onClick={() => setShowQuickEntry(true)}
               className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Option 1: Different Lightning"
+              title="Option 1: Lightning Arrow"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              <svg width="18" height="18" viewBox="0 0 352.169 352.169" fill="currentColor" stroke="currentColor" strokeWidth="12" className="text-gray-600">
+                <polygon points="245.281,293.778 177.643,323.046 245.821,171.551 249.712,162.961 129.725,162.961 211.378,8.437 195.394,0 99.701,181.032 221.718,181.032 160.487,317.132 130.764,248.467 114.157,255.637 155.951,352.169 252.469,310.388"/>
               </svg>
             </button>
 
-            {/* Option 2: Flash */}
-            <button
-              onClick={() => setShowQuickEntry(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Option 2: Flash"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <polygon points="6 2 15 11 10 11 14 22 5 13 10 13"/>
-              </svg>
-            </button>
-
-            {/* Option 3: Star */}
-            <button
-              onClick={() => setShowQuickEntry(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Option 3: Star"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-              </svg>
-            </button>
-
-            {/* Option 4: Plus in Circle */}
-            <button
-              onClick={() => setShowQuickEntry(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Option 4: Plus in Circle"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="16"/>
-                <line x1="8" y1="12" x2="16" y2="12"/>
-              </svg>
-            </button>
-
-            {/* Option 5: Pen/Edit */}
-            <button
-              onClick={() => setShowQuickEntry(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Option 5: Pen/Edit"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
-
-            {/* Option 6: Feather */}
-            <button
-              onClick={() => setShowQuickEntry(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Option 6: Feather"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/>
-                <line x1="16" y1="8" x2="2" y2="22"/>
-                <line x1="17.5" y1="15" x2="9" y2="15"/>
-              </svg>
-            </button>
             
             <button
               onClick={() => setShowTaskForm(true)}
@@ -484,8 +430,12 @@ export function SparkApp() {
 
       {showProjectForm && (
         <ProjectForm 
-          onClose={() => setShowProjectForm(false)} 
+          onClose={() => {
+            setShowProjectForm(false);
+            setEditingProjectId(null);
+          }} 
           areaId={selectedAreaId}
+          projectId={editingProjectId}
         />
       )}
 

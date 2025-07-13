@@ -29,6 +29,21 @@ export async function getProjects() {
   return projects || []
 }
 
+// Get single project by ID
+export async function getProject(id: string) {
+  const userId = await getUserId()
+  
+  const { data: project, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .single()
+
+  if (error) throw error
+  return project
+}
+
 // Create new project
 export async function createProject(projectData: Omit<ProjectInsert, 'user_id' | 'is_archived' | 'sort_order'>) {
   const userId = await getUserId()

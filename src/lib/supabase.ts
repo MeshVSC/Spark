@@ -51,6 +51,10 @@ export interface Database {
           name: string
           description: string | null
           color: string | null
+          due_date: string | null
+          priority: 'low' | 'medium' | 'high' | null
+          area_id: string | null
+          tags: string[] | null
           user_id: string
           is_archived: boolean | null
           sort_order: number | null
@@ -62,6 +66,10 @@ export interface Database {
           name: string
           description?: string | null
           color?: string | null
+          due_date?: string | null
+          priority?: 'low' | 'medium' | 'high' | null
+          area_id?: string | null
+          tags?: string[] | null
           user_id: string
           is_archived?: boolean | null
           sort_order?: number | null
@@ -73,6 +81,10 @@ export interface Database {
           name?: string
           description?: string | null
           color?: string | null
+          due_date?: string | null
+          priority?: 'low' | 'medium' | 'high' | null
+          area_id?: string | null
+          tags?: string[] | null
           user_id?: string
           is_archived?: boolean | null
           sort_order?: number | null

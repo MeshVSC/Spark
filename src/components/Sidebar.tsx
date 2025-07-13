@@ -18,6 +18,7 @@ interface SidebarProps {
   selectedAreaId: string | null;
   onProjectSelect: (projectId: string) => void;
   onAreaSelect: (areaId: string) => void;
+  onProjectEdit: (projectId: string) => void;
   onNewProject: () => void;
   onNewArea: () => void;
   onNewTask: () => void;
@@ -32,6 +33,7 @@ export function Sidebar({
   selectedAreaId,
   onProjectSelect,
   onAreaSelect,
+  onProjectEdit,
   onNewProject,
   onNewArea,
   onNewTask,
@@ -100,7 +102,9 @@ export function Sidebar({
 
     const projectSubscription = subscribeToProjects(async () => {
       try {
+        console.log('🔄 Project subscription triggered, fetching updated projects...');
         const updatedProjects = await getProjects();
+        console.log('✅ Projects updated:', updatedProjects.length);
         setProjects(updatedProjects);
       } catch (error) {
         console.error("Failed to fetch updated projects:", error);
@@ -109,7 +113,9 @@ export function Sidebar({
     
     const areaSubscription = subscribeToAreas(async () => {
       try {
+        console.log('🔄 Area subscription triggered, fetching updated areas...');
         const updatedAreas = await getAreas();
+        console.log('✅ Areas updated:', updatedAreas.length);
         setAreas(updatedAreas);
       } catch (error) {
         console.error("Failed to fetch updated areas:", error);
@@ -322,10 +328,140 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Projects Section */}
-      <div className="pb-4">
-        <div className="space-y-0 max-h-48 overflow-y-auto">
-          {projects.map((project) => {
+      {/* Folders and Projects Section */}
+      <div className="flex-1">
+        <div className="space-y-0 max-h-96 overflow-y-auto">
+          {/* Areas with their projects nested underneath */}
+          {areas.map((area) => {
+            const areaProjects = projects.filter(project => project.area_id === area.id);
+            
+            return (
+              <div key={area.id}>
+                {/* Area */}
+                <div
+                  className={`w-full ${
+                    selectedAreaId === area.id
+                      ? 'bg-gray-300'
+                      : 'hover:bg-gray-200'
+                  } transition-all duration-150`}
+                >
+                  <button
+                    onClick={() => onAreaSelect(area.id)}
+                    className={`flex items-center gap-3 py-1.5 text-sm font-medium w-full px-4 text-gray-700 ${
+                      selectedAreaId === area.id ? 'text-gray-900' : ''
+                    }`}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-gray-500">
+                      <path d="M20 6h-2l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
+                    </svg>
+                    <span className="truncate">{area.name}</span>
+                  </button>
+                </div>
+                
+                {/* Projects under this area */}
+                {areaProjects.map((project) => {
+                  const taskCount = projectTaskCounts[project.id] || 0;
+                  const isCollapsed = collapsedProjects.has(project.id);
+                  const hasItems = taskCount > 0;
+                  const completionData = projectCompletionStats[project.id];
+                  const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
+                  
+                  return (
+                    <div key={project.id} className="ml-4">
+                      <div 
+                        className={`flex items-center w-full ${
+                          selectedProjectId === project.id 
+                            ? 'bg-gray-300' 
+                            : 'hover:bg-gray-200'
+                        } transition-all duration-150`}
+                      >
+                        {/* Collapse/expand arrow */}
+                        {hasItems && (
+                          <button
+                            onClick={() => toggleProjectCollapse(project.id)}
+                            className="p-1 pl-2 transition-colors"
+                          >
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              className={`text-gray-400 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                            >
+                              <polyline points="9,18 15,12 9,6"></polyline>
+                            </svg>
+                          </button>
+                        )}
+                        
+                        {/* Project button */}
+                        <div
+                          className={`flex items-center gap-3 py-1.5 text-sm font-medium flex-1 text-gray-700 ${
+                            selectedProjectId === project.id ? 'text-gray-900' : ''
+                          }`}
+                          style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
+                        >
+                          <button
+                            onClick={() => onProjectSelect(project.id)}
+                            className="flex items-center gap-2"
+                          >
+                            {/* Progress completion indicator */}
+                            {completionData && completionData.total > 0 && (
+                              <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${
+                                isCompleted 
+                                  ? 'bg-blue-500 border-blue-500' 
+                                  : 'border-gray-300 bg-white'
+                              }`}>
+                                {isCompleted && (
+                                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
+                                    <polyline points="20,6 9,17 4,12" stroke="white" strokeWidth="4" fill="none"/>
+                                  </svg>
+                                )}
+                              </div>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => onProjectEdit(project.id)}
+                            className="truncate flex-1 text-left hover:text-blue-600 transition-colors"
+                          >
+                            {project.name}
+                          </button>
+                          {taskCount > 0 && (
+                            <span className="things-count-badge">
+                              {taskCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Tasks shown when expanded */}
+                      {hasItems && !isCollapsed && (
+                        <div className="ml-6 border-l border-gray-200 pl-2 space-y-1">
+                          {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
+                            <div key={task.id} className="flex items-center gap-2 py-1 text-xs text-gray-600">
+                              <div className={`w-1.5 h-1.5 rounded-full ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
+                              <span className={`truncate ${task.completed ? 'line-through' : ''}`}>
+                                {task.title}
+                              </span>
+                            </div>
+                          ))}
+                          {(projectTasks[project.id]?.length || 0) > 5 && (
+                            <div className="text-xs text-gray-400 pl-3">
+                              +{(projectTasks[project.id]?.length || 0) - 5} more
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+          
+          {/* Projects without areas */}
+          {projects.filter(project => !project.area_id).map((project) => {
             const taskCount = projectTaskCounts[project.id] || 0;
             const isCollapsed = collapsedProjects.has(project.id);
             const hasItems = taskCount > 0;
@@ -362,14 +498,16 @@ export function Sidebar({
                   )}
                   
                   {/* Project button */}
-                  <button
-                    onClick={() => onProjectSelect(project.id)}
+                  <div
                     className={`flex items-center gap-3 py-1.5 text-sm font-medium flex-1 text-gray-700 ${
                       selectedProjectId === project.id ? 'text-gray-900' : ''
                     }`}
                     style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
                   >
-                    <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onProjectSelect(project.id)}
+                      className="flex items-center gap-2"
+                    >
                       <div
                         className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: project.color || "#8E8E93" }}
@@ -387,14 +525,19 @@ export function Sidebar({
                           )}
                         </div>
                       )}
-                    </div>
-                    <span className="truncate flex-1 text-left">{project.name}</span>
+                    </button>
+                    <button
+                      onClick={() => onProjectEdit(project.id)}
+                      className="truncate flex-1 text-left hover:text-blue-600 transition-colors"
+                    >
+                      {project.name}
+                    </button>
                     {taskCount > 0 && (
                       <span className="things-count-badge">
                         {taskCount}
                       </span>
                     )}
-                  </button>
+                  </div>
                 </div>
                 
                 {/* Tasks shown when expanded */}
@@ -434,34 +577,6 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Folders Section */}
-      <div className="flex-1">
-        <div className="space-y-0 max-h-48 overflow-y-auto">
-          {areas.map((area) => (
-            <div
-              key={area.id}
-              className={`w-full ${
-                selectedAreaId === area.id
-                  ? 'bg-gray-300'
-                  : 'hover:bg-gray-200'
-              } transition-all duration-150`}
-            >
-              <button
-                onClick={() => onAreaSelect(area.id)}
-                className={`flex items-center gap-3 py-1.5 text-sm font-medium w-full px-4 text-gray-700 ${
-                  selectedAreaId === area.id ? 'text-gray-900' : ''
-                }`}
-              >
-                <div
-                  className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: area.color || "#8E8E93" }}
-                />
-                <span className="truncate">{area.name}</span>
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Bottom Menu */}
       <div className="border-t border-gray-200 px-4 py-2">
