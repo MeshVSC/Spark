@@ -23,15 +23,25 @@ export function SignInForm() {
         toast.success("Account created! Please check your email to verify your account.");
       }
     } catch (error: any) {
+      console.error("Auth error:", error);
+      console.error("Error message:", error.message);
+      console.error("Error details:", error);
+      
       let toastTitle = "";
       if (error.message.includes("Invalid login credentials")) {
         toastTitle = "Invalid email or password. Please try again.";
       } else if (error.message.includes("User already registered")) {
         toastTitle = "Account already exists. Did you mean to sign in?";
+      } else if (error.message.includes("Email not confirmed")) {
+        toastTitle = "Please check your email and click the confirmation link before signing in.";
+      } else if (error.message.includes("Password should be at least")) {
+        toastTitle = "Password must be at least 6 characters long.";
+      } else if (error.message.includes("Invalid email")) {
+        toastTitle = "Please enter a valid email address.";
       } else {
         toastTitle = flow === "signIn" 
-          ? "Could not sign in. Please try again." 
-          : "Could not sign up. Please try again.";
+          ? `Could not sign in: ${error.message}` 
+          : `Could not sign up: ${error.message}`;
       }
       toast.error(toastTitle);
     } finally {

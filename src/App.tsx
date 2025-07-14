@@ -3,6 +3,7 @@ import { SignInForm } from "./SignInForm";
 import { Toaster } from "sonner";
 import { SparkApp } from "./components/SparkApp";
 import { onAuthStateChange } from "./lib/auth";
+import { testSupabaseConnection } from "./lib/supabase";
 import type { User } from '@supabase/supabase-js';
 
 export default function App() {
@@ -10,7 +11,15 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("🔧 Initializing auth state...");
+    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+    console.log("Supabase Anon Key exists:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+    
+    // Test connection on app load
+    testSupabaseConnection();
+    
     const { data: { subscription } } = onAuthStateChange((user) => {
+      console.log("👤 Auth state changed:", user ? "logged in" : "logged out");
       setUser(user);
       setLoading(false);
     });

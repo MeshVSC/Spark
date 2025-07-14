@@ -6,6 +6,26 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Test Supabase connection
+export async function testSupabaseConnection() {
+  try {
+    console.log("🔗 Testing Supabase connection...");
+    console.log("URL:", supabaseUrl);
+    console.log("Anon Key (first 20 chars):", supabaseAnonKey.substring(0, 20) + "...");
+    
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("❌ Supabase connection test failed:", error);
+      return false;
+    }
+    console.log("✅ Supabase connection successful");
+    return true;
+  } catch (error) {
+    console.error("❌ Supabase connection error:", error);
+    return false;
+  }
+}
+
 // Database types based on our schema
 export interface Database {
   public: {
