@@ -45,13 +45,18 @@ export default function App() {
       ) : (
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="w-full max-w-md mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8">
               <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">✨ Spark</h1>
-                <p className="text-lg text-gray-600">Get organized. Get focused. Get things done.</p>
-                <p className="text-sm text-gray-400 mt-2">© Mesh 2025</p>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
+                  <span className="text-2xl">✨</span>
+                </div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Spark</h1>
+                <p className="text-gray-600">Get organized. Get focused. Get things done.</p>
               </div>
               <SignInForm />
+              <div className="mt-8 text-center">
+                <p className="text-xs text-gray-400">© Mesh 2025</p>
+              </div>
             </div>
           </div>
         </div>

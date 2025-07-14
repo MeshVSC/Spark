@@ -60,45 +60,72 @@ export function SignInForm() {
 
   return (
     <div className="w-full">
-      <form className="flex flex-col gap-form-field" onSubmit={handleSubmit}>
-        <input
-          className="auth-input-field"
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-        />
-        <input
-          className="auth-input-field"
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-        />
-        <button className="auth-button" type="submit" disabled={submitting}>
-          {flow === "signIn" ? "Sign in" : "Sign up"}
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <div className="space-y-4">
+          <div>
+            <input
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              type="email"
+              name="email"
+              placeholder="Email address"
+              required
+            />
+          </div>
+          <div>
+            <input
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+            />
+          </div>
+        </div>
+        
+        <button 
+          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" 
+          type="submit" 
+          disabled={submitting}
+        >
+          {submitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span>Please wait...</span>
+            </>
+          ) : (
+            <span>{flow === "signIn" ? "Sign in" : "Create account"}</span>
+          )}
         </button>
-        <div className="text-center text-sm text-secondary">
-          <span>
+        
+        <div className="text-center">
+          <span className="text-gray-600 text-sm">
             {flow === "signIn"
               ? "Don't have an account? "
               : "Already have an account? "}
           </span>
           <button
             type="button"
-            className="text-primary hover:text-primary-hover hover:underline font-medium cursor-pointer"
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200"
             onClick={() => setFlow(flow === "signIn" ? "signUp" : "signIn")}
           >
-            {flow === "signIn" ? "Sign up instead" : "Sign in instead"}
+            {flow === "signIn" ? "Sign up" : "Sign in"}
           </button>
         </div>
       </form>
-      <div className="flex items-center justify-center my-3">
-        <hr className="my-4 grow border-gray-200" />
-        <span className="mx-4 text-secondary">or</span>
-        <hr className="my-4 grow border-gray-200" />
+      
+      <div className="flex items-center my-6">
+        <div className="flex-1 h-px bg-gray-300"></div>
+        <span className="px-4 text-gray-500 text-sm">or</span>
+        <div className="flex-1 h-px bg-gray-300"></div>
       </div>
-      <button className="auth-button" onClick={handleAnonymousSignIn}>
+      
+      <button 
+        className="w-full py-3 px-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center gap-2" 
+        onClick={handleAnonymousSignIn}
+      >
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+        </svg>
         Continue as Guest
       </button>
     </div>
