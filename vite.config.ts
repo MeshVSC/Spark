@@ -14,4 +14,6 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Set base path for GitHub Pages deployment
+  base: process.env.GITHUB_PAGES === 'true' ? '/Spark/' : '/',
 }));
