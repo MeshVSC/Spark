@@ -6,6 +6,11 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Make supabase available globally for development
+if (typeof window !== 'undefined') {
+  (window as any).supabase = supabase
+}
+
 // Test Supabase connection
 export async function testSupabaseConnection() {
   try {

@@ -171,7 +171,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
   };
 
   const ProjectHeader = ({ project }: { project: ProjectWithTasks }) => (
-    <div className="mb-4">
+    <div className="mb-4 group">
       <div className="flex items-center gap-3 mb-2">
         {/* Completion circle */}
         <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
@@ -187,10 +187,13 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
         </div>
         
         {/* Project title */}
-        <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 flex-1">{project.name}</h3>
         
         {/* Three dots menu */}
-        <button className="p-1 rounded hover:bg-gray-100 transition-colors">
+        <button 
+          onClick={() => onEditTask(project.id)}
+          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-100 transition-all duration-150"
+        >
           <div className="flex gap-0.5">
             <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
             <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
@@ -223,7 +226,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
     const filteredTasks = applyFilters(tasks);
 
     return (
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {filteredTasks.map((task) => (
           <TaskItem
             key={task.id}
@@ -263,7 +266,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
           <div key={project.id} className="space-y-3">
             <ProjectHeader project={project} />
             
-            <div className="space-y-1 ml-7">
+            <div className="space-y-0.5 ml-7">
               {filteredTasks.map((task) => (
                 <TaskItem
                   key={task.id}

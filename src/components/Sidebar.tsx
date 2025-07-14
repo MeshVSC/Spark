@@ -45,6 +45,7 @@ export function Sidebar({
   const [areas, setAreas] = useState<Area[]>([]);
   const [taskStats, setTaskStats] = useState<TaskStats>(null);
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+  const [collapsedAreas, setCollapsedAreas] = useState<Set<string>>(new Set());
   const [projectTaskCounts, setProjectTaskCounts] = useState<Record<string, number>>({});
   const [projectTasks, setProjectTasks] = useState<Record<string, Task[]>>({});
   const [projectCompletionStats, setProjectCompletionStats] = useState<Record<string, { completed: number; total: number }>>({});
@@ -254,6 +255,26 @@ export function Sidebar({
         </svg>
       )
     },
+    {
+      id: "folders" as const,
+      name: "Folders",
+      count: 0,
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 6h-2l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
+        </svg>
+      )
+    },
+    {
+      id: "all-projects" as const,
+      name: "All Projects",
+      count: 0,
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      )
+    },
   ];
 
   const toggleProjectCollapse = (projectId: string) => {
@@ -276,6 +297,17 @@ export function Sidebar({
 
   return (
     <div className="w-64 flex flex-col border-r border-gray-200" style={{ background: '#F5F5F5' }}>
+      {/* Mobile collapse button */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-900">Spark</h2>
+        <button className="p-1 rounded hover:bg-gray-100 transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
 
       {/* Smart Lists Section */}
       <div className="pt-6 pb-4">
@@ -329,37 +361,75 @@ export function Sidebar({
       </div>
 
       {/* Folders and Projects Section */}
-      <div className="flex-1">
-        <div className="space-y-0 max-h-96 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto overflow-x-hidden">
           {/* Areas with their projects nested underneath */}
           {areas.map((area) => {
             const areaProjects = projects.filter(project => project.area_id === area.id);
+            const isAreaCollapsed = collapsedAreas.has(area.id);
+            const hasProjects = areaProjects.length > 0;
             
             return (
-              <div key={area.id}>
+              <div key={area.id} className="mb-4">
                 {/* Area */}
                 <div
-                  className={`w-full ${
+                  className={`w-full group ${
                     selectedAreaId === area.id
                       ? 'bg-gray-300'
                       : 'hover:bg-gray-200'
                   } transition-all duration-150`}
                 >
-                  <button
-                    onClick={() => onAreaSelect(area.id)}
-                    className={`flex items-center gap-3 py-1.5 text-sm font-medium w-full px-4 text-gray-700 ${
-                      selectedAreaId === area.id ? 'text-gray-900' : ''
-                    }`}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-gray-500">
-                      <path d="M20 6h-2l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
-                    </svg>
-                    <span className="truncate">{area.name}</span>
-                  </button>
+                  <div className="flex items-center w-full">
+                    <button
+                      onClick={() => onAreaSelect(area.id)}
+                      className={`flex items-center gap-3 py-1.5 text-sm font-medium flex-1 px-4 text-gray-700 ${
+                        selectedAreaId === area.id ? 'text-gray-900' : ''
+                      }`}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-gray-500">
+                        <path d="M20 6h-2l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
+                      </svg>
+                      <span className="truncate">{area.name}</span>
+                    </button>
+                    <button
+                      onClick={() => onEditArea(area)}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150"
+                    >
+                      <div className="flex gap-0.5">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                      </div>
+                    </button>
+                    {hasProjects && (
+                      <button
+                        onClick={() => {
+                          const newCollapsed = new Set(collapsedAreas);
+                          if (isAreaCollapsed) {
+                            newCollapsed.delete(area.id);
+                          } else {
+                            newCollapsed.add(area.id);
+                          }
+                          setCollapsedAreas(newCollapsed);
+                        }}
+                        className="p-1 hover:bg-gray-300 rounded transition-all duration-150 mr-2"
+                      >
+                        <svg 
+                          width="12" 
+                          height="12" 
+                          viewBox="0 0 24 24" 
+                          fill="currentColor" 
+                          className={`text-gray-500 transition-transform duration-150 ${isAreaCollapsed ? 'rotate-0' : 'rotate-90'}`}
+                        >
+                          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Projects under this area */}
-                {areaProjects.map((project) => {
+                {!isAreaCollapsed && areaProjects.map((project) => {
                   const taskCount = projectTaskCounts[project.id] || 0;
                   const isCollapsed = collapsedProjects.has(project.id);
                   const hasItems = taskCount > 0;
@@ -367,7 +437,7 @@ export function Sidebar({
                   const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
                   
                   return (
-                    <div key={project.id} className="ml-4">
+                    <div key={project.id} className="pl-0.5 mb-1">
                       <div 
                         className={`flex items-center w-full ${
                           selectedProjectId === project.id 
@@ -421,12 +491,34 @@ export function Sidebar({
                               </div>
                             )}
                           </button>
-                          <button
-                            onClick={() => onProjectEdit(project.id)}
-                            className="truncate flex-1 text-left hover:text-blue-600 transition-colors"
-                          >
-                            {project.name}
-                          </button>
+                          <div className="flex items-center gap-2 flex-1">
+                            {/* Progress Circle */}
+                            <div className="relative w-4 h-4">
+                              <svg className="w-4 h-4 -rotate-90" viewBox="0 0 36 36">
+                                <path
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none"
+                                  stroke="#e5e7eb"
+                                  strokeWidth="3"
+                                />
+                                {completionData && completionData.total > 0 && (
+                                  <path
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke={isCompleted ? "#10b981" : "#3b82f6"}
+                                    strokeWidth="3"
+                                    strokeDasharray={`${(completionData.completed / completionData.total) * 100}, 100`}
+                                  />
+                                )}
+                              </svg>
+                            </div>
+                            <button
+                              onClick={() => onProjectSelect(project.id)}
+                              className="truncate text-left hover:text-blue-600 transition-colors"
+                            >
+                              {project.name}
+                            </button>
+                          </div>
                           {taskCount > 0 && (
                             <span className="things-count-badge">
                               {taskCount}
@@ -437,17 +529,17 @@ export function Sidebar({
                       
                       {/* Tasks shown when expanded */}
                       {hasItems && !isCollapsed && (
-                        <div className="ml-6 border-l border-gray-200 pl-2 space-y-1">
+                        <div className="ml-5 border-l border-gray-200 pl-2 space-y-0">
                           {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
-                            <div key={task.id} className="flex items-center gap-2 py-1 text-xs text-gray-600">
-                              <div className={`w-1.5 h-1.5 rounded-full ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
-                              <span className={`truncate ${task.completed ? 'line-through' : ''}`}>
+                            <div key={task.id} className="flex items-center gap-2 py-0.5 text-xs text-gray-600">
+                              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
+                              <span className={`truncate leading-none ${task.completed ? 'line-through' : ''}`}>
                                 {task.title}
                               </span>
                             </div>
                           ))}
                           {(projectTasks[project.id]?.length || 0) > 5 && (
-                            <div className="text-xs text-gray-400 pl-3">
+                            <div className="text-xs text-gray-400 pl-3 py-0.5">
                               +{(projectTasks[project.id]?.length || 0) - 5} more
                             </div>
                           )}
@@ -526,12 +618,34 @@ export function Sidebar({
                         </div>
                       )}
                     </button>
-                    <button
-                      onClick={() => onProjectEdit(project.id)}
-                      className="truncate flex-1 text-left hover:text-blue-600 transition-colors"
-                    >
-                      {project.name}
-                    </button>
+                    <div className="flex items-center gap-2 flex-1">
+                      {/* Progress Circle */}
+                      <div className="relative w-4 h-4">
+                        <svg className="w-4 h-4 -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#e5e7eb"
+                            strokeWidth="3"
+                          />
+                          {completionData && completionData.total > 0 && (
+                            <path
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              fill="none"
+                              stroke={isCompleted ? "#10b981" : "#3b82f6"}
+                              strokeWidth="3"
+                              strokeDasharray={`${(completionData.completed / completionData.total) * 100}, 100`}
+                            />
+                          )}
+                        </svg>
+                      </div>
+                      <button
+                        onClick={() => onProjectSelect(project.id)}
+                        className="truncate text-left hover:text-blue-600 transition-colors"
+                      >
+                        {project.name}
+                      </button>
+                    </div>
                     {taskCount > 0 && (
                       <span className="things-count-badge">
                         {taskCount}
@@ -542,23 +656,23 @@ export function Sidebar({
                 
                 {/* Tasks shown when expanded */}
                 {hasItems && !isCollapsed && (
-                  <div className="ml-8 border-l border-gray-200 pl-2">
+                  <div className="ml-5 border-l border-gray-200 pl-2 space-y-0">
                     {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
                       <div
                         key={task.id}
-                        className="text-xs text-gray-600 py-1 px-2 hover:bg-gray-100 rounded cursor-pointer"
+                        className="text-xs text-gray-600 py-0.5 px-2 hover:bg-gray-100 rounded cursor-pointer"
                         title={task.title}
                       >
                         <div className="flex items-center gap-2">
-                          <div className={`w-1.5 h-1.5 rounded-full ${
+                          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                             task.completed ? 'bg-blue-500' : 'border border-gray-300 bg-white'
                           }`} />
-                          <span className="truncate">{task.title}</span>
+                          <span className="truncate leading-none">{task.title}</span>
                         </div>
                       </div>
                     ))}
                     {(projectTasks[project.id] || []).length > 5 && (
-                      <div className="text-xs text-gray-400 px-2 py-1">
+                      <div className="text-xs text-gray-400 px-2 py-0.5">
                         +{(projectTasks[project.id] || []).length - 5} more...
                       </div>
                     )}

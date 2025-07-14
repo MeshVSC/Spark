@@ -17,6 +17,7 @@ import { CalendarView } from "./CalendarView";
 import { TimeBlockingView } from "./TimeBlockingView";
 import { RecurringTaskForm } from "./RecurringTaskForm";
 import { TaskEditForm } from "./TaskEditForm"; // Import TaskEditForm
+import { MockupDataButton } from "./MockupDataButton";
 import type { Database } from "../lib/supabase";
 
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -32,6 +33,7 @@ export function SparkApp() {
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [showAreaForm, setShowAreaForm] = useState(false);
+  const [editingAreaId, setEditingAreaId] = useState<string | null>(null);
   const [showQuickEntry, setShowQuickEntry] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showRecurringForm, setShowRecurringForm] = useState(false);
@@ -260,10 +262,12 @@ export function SparkApp() {
           setSelectedAreaId(null);
           setCurrentView("inbox");
         }}
-        onAreaSelect={(areaId) => {
+        onAreaSelect={async (areaId) => {
           setSelectedAreaId(areaId);
           setSelectedProjectId(null);
           setCurrentView("inbox");
+          // Force refresh projects and tasks
+          await refreshTaskCache();
         }}
         onProjectEdit={(projectId) => {
           setEditingProjectId(projectId);
@@ -277,6 +281,10 @@ export function SparkApp() {
           console.log("New area clicked");
           setShowAreaForm(true);
         }}
+        onEditArea={(area) => {
+          setEditingAreaId(area.id);
+          setShowAreaForm(true);
+        }}
         onNewTask={() => setShowTaskForm(true)}
         onQuickEntry={() => setShowQuickEntry(true)}
         user={user}
@@ -287,7 +295,7 @@ export function SparkApp() {
         {/* Header */}
         <div className="p-6 pb-2">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{getViewTitle()}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{getViewTitle()}</h1>
             {getViewSubtitle() && (
               <p className="text-sm text-gray-500 mt-1">{getViewSubtitle()}</p>
             )}
@@ -330,6 +338,81 @@ export function SparkApp() {
               />
             ) : currentView === "timeblocking" ? (
               <TimeBlockingView />
+            ) : currentView === "folders" ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {areas.map((area) => (
+                    <div
+                      key={area.id}
+                      onClick={() => handleAreaSelect(area.id)}
+                      className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: area.color || '#6B7280' }}
+                          ></div>
+                          <h3 className="text-lg font-semibold text-gray-900">{area.name}</h3>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditArea(area);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-100 transition-all duration-150"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-gray-500">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                          </svg>
+                        </button>
+                      </div>
+                      <p className="text-gray-600 mb-4">{area.description}</p>
+                      <div className="text-sm text-gray-500">
+                        {projects.filter(p => p.area_id === area.id).length} projects
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : currentView === "all-projects" ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {projects.map((project) => (
+                    <div
+                      key={project.id}
+                      onClick={() => handleProjectSelect(project.id)}
+                      className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: project.color || '#6B7280' }}
+                          ></div>
+                          <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingProjectId(project.id);
+                            setShowProjectForm(true);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-100 transition-all duration-150"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-gray-500">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                          </svg>
+                        </button>
+                      </div>
+                      <p className="text-gray-600 mb-4">{project.description}</p>
+                      <div className="text-sm text-gray-500">
+                        {allTasks.filter(t => t.project_id === project.id && !t.completed).length} active tasks
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <>
                 {/* Stats */}
@@ -440,7 +523,13 @@ export function SparkApp() {
       )}
 
       {showAreaForm && (
-        <AreaForm onClose={() => setShowAreaForm(false)} />
+        <AreaForm 
+          editingAreaId={editingAreaId}
+          onClose={() => {
+            setShowAreaForm(false);
+            setEditingAreaId(null);
+          }} 
+        />
       )}
 
       {showRecurringForm && (
@@ -473,6 +562,8 @@ export function SparkApp() {
         areaId={null}
         onTaskCreated={refreshTaskCache}
       />
+
+      <MockupDataButton />
 
     </div>
   );
