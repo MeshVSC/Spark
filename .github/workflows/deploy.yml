@@ -30,6 +30,9 @@ jobs:
         
     - name: Build project
       run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       
     - name: Run tests (if any)
       run: npm test --if-present
@@ -44,6 +47,9 @@ jobs:
         vercel-project-id: ${{ secrets.SPARK_VERCEL_PROJECT_ID }}
         working-directory: ./
         vercel-args: '--prod'
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         
     # Alternative: Deploy to Netlify (uncomment if using Netlify)
     # - name: Deploy to Netlify
