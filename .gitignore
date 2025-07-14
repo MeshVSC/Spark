@@ -56,3 +56,4 @@ temp/
 
 # Convex (legacy - safe to remove after migration verification)
 convex/_generated/
+.vercel

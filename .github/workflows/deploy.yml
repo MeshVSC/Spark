@@ -1,0 +1,58 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Create environment file
+      run: |
+        echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
+        echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
+        
+    - name: Build project
+      run: npm run build
+      
+    - name: Run tests (if any)
+      run: npm test --if-present
+      
+    # Deploy to Vercel (if you're using Vercel)
+    - name: Deploy to Vercel
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.SPARK_VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.SPARK_VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.SPARK_VERCEL_PROJECT_ID }}
+        working-directory: ./
+        
+    # Alternative: Deploy to Netlify (uncomment if using Netlify)
+    # - name: Deploy to Netlify
+    #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    #   uses: nwtgck/actions-netlify@v2
+    #   with:
+    #     publish-dir: './dist'
+    #     production-branch: main
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     deploy-message: "Deploy from GitHub Actions"
+    #   env:
+    #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    #     NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
