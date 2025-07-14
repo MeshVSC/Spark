@@ -17,7 +17,6 @@ import { CalendarView } from "./CalendarView";
 import { TimeBlockingView } from "./TimeBlockingView";
 import { RecurringTaskForm } from "./RecurringTaskForm";
 import { TaskEditForm } from "./TaskEditForm"; // Import TaskEditForm
-import { MockupDataButton } from "./MockupDataButton";
 import type { Database } from "../lib/supabase";
 
 type Project = Database['public']['Tables']['projects']['Row'];
