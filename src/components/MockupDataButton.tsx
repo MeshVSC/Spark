@@ -3,11 +3,11 @@ import { supabase } from '../lib/supabase'
 import { getCurrentUser } from '../lib/auth'
 
 const mockAreas = [
-  { name: 'Work', description: 'Professional projects and tasks', color: '#4F46E5' },
-  { name: 'Personal', description: 'Personal life and hobbies', color: '#059669' },
-  { name: 'Health & Fitness', description: 'Exercise and wellness goals', color: '#DC2626' },
-  { name: 'Learning', description: 'Educational and skill development', color: '#7C3AED' },
-  { name: 'Finance', description: 'Budget and financial planning', color: '#EA580C' }
+  { name: 'Work', description: 'Professional projects and tasks', color: 'work' },
+  { name: 'Personal', description: 'Personal life and hobbies', color: 'home' },
+  { name: 'Health & Fitness', description: 'Exercise and wellness goals', color: 'health' },
+  { name: 'Learning', description: 'Educational and skill development', color: 'education' },
+  { name: 'Finance', description: 'Budget and financial planning', color: 'money' }
 ]
 
 const mockProjects = [
@@ -84,101 +84,106 @@ const mockTasks = [
   { title: 'Clean out garage', area: 'Personal', priority: 'low', completed: false }
 ]
 
+// Export the addMockupData function for use in other components
+export const addMockupData = async () => {
+  console.log('Starting to add mockup data...')
+  
+  // Get the current user
+  const user = await getCurrentUser()
+  if (!user) {
+    console.error('User not authenticated')
+    throw new Error('User not authenticated')
+  }
+  
+  console.log('User authenticated:', user.email || 'anonymous')
+  
+  // Add areas (folders)
+  console.log('Adding areas...')
+  const areaMap = {}
+  for (const area of mockAreas) {
+    const { data, error } = await supabase
+      .from('areas')
+      .insert({
+        name: area.name,
+        description: area.description,
+        color: area.color,
+        user_id: user.id
+      })
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error adding area:', area.name, error)
+    } else {
+      areaMap[area.name] = data.id
+      console.log('Added area:', area.name)
+    }
+  }
+  
+  // Add projects
+  console.log('Adding projects...')
+  const projectMap = {}
+  for (const project of mockProjects) {
+    const { data, error } = await supabase
+      .from('projects')
+      .insert({
+        name: project.name,
+        description: project.description,
+        color: project.color,
+        priority: project.priority,
+        area_id: areaMap[project.area],
+        user_id: user.id
+      })
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error adding project:', project.name, error)
+    } else {
+      projectMap[project.name] = data.id
+      console.log('Added project:', project.name)
+    }
+  }
+  
+  // Add tasks
+  console.log('Adding tasks...')
+  for (const task of mockTasks) {
+    const taskData = {
+      title: task.title,
+      priority: task.priority,
+      completed: task.completed,
+      user_id: user.id
+    }
+    
+    if (task.project) {
+      taskData.project_id = projectMap[task.project]
+    } else if (task.area) {
+      taskData.area_id = areaMap[task.area]
+    }
+    
+    const { error } = await supabase
+      .from('tasks')
+      .insert(taskData)
+    
+    if (error) {
+      console.error('Error adding task:', task.title, error)
+    } else {
+      console.log('Added task:', task.title)
+    }
+  }
+  
+  console.log('✅ Mockup data added successfully!')
+  console.log(`Added ${mockAreas.length} areas, ${mockProjects.length} projects, and ${mockTasks.length} tasks`)
+}
+
 export function MockupDataButton() {
   const [isLoading, setIsLoading] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
 
-  const addMockupData = async () => {
+  const handleAddMockupData = async () => {
     setIsLoading(true)
     try {
-      console.log('Starting to add mockup data...')
-      
-      // Get the current user
-      const user = await getCurrentUser()
-      if (!user) {
-        console.error('User not authenticated')
-        return
-      }
-      
-      console.log('User authenticated:', user.email)
-      
-      // Add areas (folders)
-      console.log('Adding areas...')
-      const areaMap = {}
-      for (const area of mockAreas) {
-        const { data, error } = await supabase
-          .from('areas')
-          .insert({
-            name: area.name,
-            description: area.description,
-            color: area.color,
-            user_id: user.id
-          })
-          .select()
-          .single()
-        
-        if (error) {
-          console.error('Error adding area:', area.name, error)
-        } else {
-          areaMap[area.name] = data.id
-          console.log('Added area:', area.name)
-        }
-      }
-      
-      // Add projects
-      console.log('Adding projects...')
-      const projectMap = {}
-      for (const project of mockProjects) {
-        const { data, error } = await supabase
-          .from('projects')
-          .insert({
-            name: project.name,
-            description: project.description,
-            color: project.color,
-            priority: project.priority,
-            area_id: areaMap[project.area],
-            user_id: user.id
-          })
-          .select()
-          .single()
-        
-        if (error) {
-          console.error('Error adding project:', project.name, error)
-        } else {
-          projectMap[project.name] = data.id
-          console.log('Added project:', project.name)
-        }
-      }
-      
-      // Add tasks
-      console.log('Adding tasks...')
-      for (const task of mockTasks) {
-        const taskData = {
-          title: task.title,
-          priority: task.priority,
-          completed: task.completed,
-          user_id: user.id
-        }
-        
-        if (task.project) {
-          taskData.project_id = projectMap[task.project]
-        } else if (task.area) {
-          taskData.area_id = areaMap[task.area]
-        }
-        
-        const { error } = await supabase
-          .from('tasks')
-          .insert(taskData)
-        
-        if (error) {
-          console.error('Error adding task:', task.title, error)
-        } else {
-          console.log('Added task:', task.title)
-        }
-      }
-      
-      console.log('✅ Mockup data added successfully!')
-      console.log(`Added ${mockAreas.length} areas, ${mockProjects.length} projects, and ${mockTasks.length} tasks`)
+      await addMockupData()
       setIsComplete(true)
       
       // Refresh the page to see the new data

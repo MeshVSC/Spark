@@ -20,6 +20,35 @@ import { TaskEditForm } from "./TaskEditForm"; // Import TaskEditForm
 import { MockupDataButton } from "./MockupDataButton";
 import type { Database } from "../lib/supabase";
 
+// Inline mockup data button component for bottom bar
+function MockupDataInlineButton() {
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleAddMockupData = async () => {
+    setIsLoading(true);
+    try {
+      const { addMockupData } = await import('./MockupDataButton');
+      await addMockupData();
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      console.error('Error adding mockup data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleAddMockupData}
+      disabled={isLoading}
+      className="text-xs text-gray-600 hover:text-gray-900 transition-colors px-2 py-1 hover:bg-gray-100 rounded disabled:opacity-50"
+      title="Add sample data to test the app"
+    >
+      {isLoading ? 'Adding...' : 'Add Mockup Data'}
+    </button>
+  );
+}
+
 type Project = Database['public']['Tables']['projects']['Row'];
 type Area = Database['public']['Tables']['areas']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row']; // Single declaration
@@ -444,62 +473,70 @@ export function SparkApp() {
         
         {/* Bottom Toolbar */}
         <div className="border-t border-gray-200 bg-white px-4 py-2">
-          <div className="flex items-center justify-center gap-8">
-            <button
-              onClick={() => setShowSearch(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Search (⌘K)"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.35-4.35"></path>
-              </svg>
-            </button>
+          <div className="flex items-center justify-between">
+            {/* Center buttons */}
+            <div className="flex items-center justify-center gap-8 flex-1">
+              <button
+                onClick={() => setShowSearch(true)}
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                title="Search (⌘K)"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </button>
 
-            {/* Option 1: Lightning Arrow */}
-            <button
-              onClick={() => setShowQuickEntry(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Option 1: Lightning Arrow"
-            >
-              <svg width="18" height="18" viewBox="0 0 352.169 352.169" fill="currentColor" stroke="currentColor" strokeWidth="12" className="text-gray-600">
-                <polygon points="245.281,293.778 177.643,323.046 245.821,171.551 249.712,162.961 129.725,162.961 211.378,8.437 195.394,0 99.701,181.032 221.718,181.032 160.487,317.132 130.764,248.467 114.157,255.637 155.951,352.169 252.469,310.388"/>
-              </svg>
-            </button>
+              {/* Option 1: Lightning Arrow */}
+              <button
+                onClick={() => setShowQuickEntry(true)}
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                title="Option 1: Lightning Arrow"
+              >
+                <svg width="18" height="18" viewBox="0 0 352.169 352.169" fill="currentColor" stroke="currentColor" strokeWidth="12" className="text-gray-600">
+                  <polygon points="245.281,293.778 177.643,323.046 245.821,171.551 249.712,162.961 129.725,162.961 211.378,8.437 195.394,0 99.701,181.032 221.718,181.032 160.487,317.132 130.764,248.467 114.157,255.637 155.951,352.169 252.469,310.388"/>
+                </svg>
+              </button>
 
-            
-            <button
-              onClick={() => setShowTaskForm(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="New To-Do (⌘N)"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-            </button>
-            
-            <button
-              onClick={() => setShowProjectForm(true)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="New Project"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="16"></line>
-                <line x1="8" y1="12" x2="16" y2="12"></line>
-              </svg>
-            </button>
-            
-            <button
-              onClick={() => signOut()}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
-              title="Sign Out"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <path d="M16 17l5-5-5-5M21 12H9M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
-              </svg>
-            </button>
+              
+              <button
+                onClick={() => setShowTaskForm(true)}
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                title="New To-Do (⌘N)"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              
+              <button
+                onClick={() => setShowProjectForm(true)}
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                title="New Project"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+              </button>
+              
+              <button
+                onClick={() => signOut()}
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                title="Sign Out"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <path d="M16 17l5-5-5-5M21 12H9M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
+                </svg>
+              </button>
+            </div>
+
+            {/* Right corner - Mockup Data Button for guest users only */}
+            {user?.is_anonymous && (
+              <MockupDataInlineButton />
+            )}
           </div>
         </div>
       </div>
@@ -565,8 +602,6 @@ export function SparkApp() {
         areaId={null}
         onTaskCreated={refreshTaskCache}
       />
-
-      <MockupDataButton />
 
     </div>
   );

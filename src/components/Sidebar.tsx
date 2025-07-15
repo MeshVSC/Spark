@@ -6,6 +6,87 @@ import { SignOutButton } from "../SignOutButton";
 import { Settings } from "./Settings";
 import type { Database } from "../lib/supabase";
 
+// Icon mapping for areas - returns JSX elements instead of emoji
+const getAreaIcon = (iconName?: string | null) => {
+  const iconStyle = "w-4 h-4 text-gray-500";
+  
+  switch (iconName) {
+    case 'work':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14,6V4H10V6H4V18H20V6M12,7A3,3 0 0,1 15,10A3,3 0 0,1 12,13A3,3 0 0,1 9,10A3,3 0 0,1 12,7Z" />
+        </svg>
+      );
+    case 'home':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
+        </svg>
+      );
+    case 'health':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M15.5,12L14,10.5L10.5,14L8.5,12L7,13.5L10.5,17L15.5,12Z" />
+        </svg>
+      );
+    case 'money':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6.5A2,2 0 0,1 14,8.5V9.5A2,2 0 0,1 12,11.5A2,2 0 0,1 10,9.5V8.5A2,2 0 0,1 12,6.5M8.5,12H15.5V13.5H8.5V12M8.5,15H15.5V16.5H8.5V15Z" />
+        </svg>
+      );
+    case 'education':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" />
+        </svg>
+      );
+    case 'shopping':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17,18C17.56,18 18,18.44 18,19C18,19.56 17.56,20 17,20C16.44,20 16,19.56 16,19C16,18.44 16.44,18 17,18M1,2V4H3L6.6,11.59L5.24,14.04C5.09,14.32 5,14.65 5,15C5,16.1 5.9,17 7,17H19V15H7.42C7.28,15 7.17,14.89 7.17,14.75L7.2,14.63L8.1,13H15.55C16.3,13 16.96,12.58 17.3,11.97L20.88,5H5.21L4.27,3H1M7,18C7.56,18 8,18.44 8,19C8,19.56 7.56,20 7,20C6.44,20 6,19.56 6,19C6,18.44 6.44,18 7,18Z" />
+        </svg>
+      );
+    case 'travel':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z" />
+        </svg>
+      );
+    case 'goals':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,10.5A1.5,1.5 0 0,1 13.5,12A1.5,1.5 0 0,1 12,13.5A1.5,1.5 0 0,1 10.5,12A1.5,1.5 0 0,1 12,10.5Z" />
+        </svg>
+      );
+    case 'settings':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+        </svg>
+      );
+    case 'heart':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z" />
+        </svg>
+      );
+    case 'creative':
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M13,11H14V13H13V11M12,7A5,5 0 0,0 7,12H9A3,3 0 0,1 12,9A3,3 0 0,1 15,12H17A5,5 0 0,0 12,7Z" />
+        </svg>
+      );
+    case 'folder':
+    default:
+      return (
+        <svg className={iconStyle} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 6h-2l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
+        </svg>
+      );
+  }
+};
+
 type Project = Database['public']['Tables']['projects']['Row'];
 type Area = Database['public']['Tables']['areas']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'];
@@ -304,7 +385,7 @@ export function Sidebar({
   return (
     <div className={`${collapsed ? 'w-16' : 'w-64'} flex flex-col border-r border-gray-200 transition-all duration-300`} style={{ background: '#F5F5F5' }}>
       {/* Collapse button */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4">
         {!collapsed && <h2 className="text-lg font-semibold text-gray-900">Spark</h2>}
         <button 
           onClick={onToggleCollapse}
@@ -319,8 +400,9 @@ export function Sidebar({
 
       {/* Smart Lists Section */}
       <div className="pt-8 pb-4">
-        <div className="space-y-1">
-          {views.map((view) => (
+        {/* Group 1: Inbox & Completed - slightly separated */}
+        <div className="space-y-0 mb-2">
+          {views.filter(view => view.id === 'inbox' || view.id === 'completed').map((view) => (
             <div
               key={view.id}
               className={`w-full ${
@@ -350,7 +432,70 @@ export function Sidebar({
               </button>
             </div>
           ))}
-          {calendarViews.map((view) => (
+        </div>
+        
+        {/* Group 2: Today, Upcoming, Someday - close together */}
+        <div className="space-y-0 mb-2">
+          {views.filter(view => ['today', 'upcoming', 'someday'].includes(view.id)).map((view) => (
+            <div
+              key={view.id}
+              className={`w-full ${
+                currentView === view.id && !selectedProjectId && !selectedAreaId
+                  ? 'bg-gray-300'
+                  : 'hover:bg-gray-200'
+              } transition-all duration-150`}
+            >
+              <button
+                onClick={() => onViewChange(view.id)}
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-normal w-full text-gray-700 ${
+                  currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
+                }`}
+                title={collapsed ? view.name : undefined}
+              >
+                {view.icon}
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left">{view.name}</span>
+                    {view.count > 0 && (
+                      <span className="things-count-badge">
+                        {view.count}
+                      </span>
+                    )}
+                  </>
+                )}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Group 3: Calendar and Time Blocking - close together */}
+        <div className="space-y-0 mb-2">
+          {calendarViews.filter(view => ['calendar', 'timeblocking'].includes(view.id)).map((view) => (
+            <div
+              key={view.id}
+              className={`w-full ${
+                currentView === view.id
+                  ? 'bg-gray-300'
+                  : 'hover:bg-gray-200'
+              } transition-all duration-150`}
+            >
+              <button
+                onClick={() => onViewChange(view.id)}
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-normal w-full text-gray-700 ${
+                  currentView === view.id ? 'text-gray-900' : ''
+                }`}
+                title={collapsed ? view.name : undefined}
+              >
+                {view.icon}
+                {!collapsed && <span className="flex-1 text-left">{view.name}</span>}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Group 4: Folders and All Projects - close together */}
+        <div className="space-y-0">
+          {calendarViews.filter(view => ['folders', 'all-projects'].includes(view.id)).map((view) => (
             <div
               key={view.id}
               className={`w-full ${
@@ -376,7 +521,7 @@ export function Sidebar({
 
       {/* Folders and Projects Section */}
       {!collapsed && (
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden pt-8">
           <div className="h-full overflow-y-auto overflow-x-hidden">
           {/* Areas with their projects nested underneath */}
           {areas.map((area) => {
@@ -385,7 +530,7 @@ export function Sidebar({
             const hasProjects = areaProjects.length > 0;
             
             return (
-              <div key={area.id} className="mb-4">
+              <div key={area.id} className="mb-2">
                 {/* Area */}
                 <div
                   className={`w-full group ${
@@ -401,9 +546,7 @@ export function Sidebar({
                         selectedAreaId === area.id ? 'text-gray-900' : ''
                       }`}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-gray-500">
-                        <path d="M20 6h-2l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
-                      </svg>
+                      {getAreaIcon(area.color)}
                       <span className="truncate">{area.name}</span>
                     </button>
                     <button
@@ -452,7 +595,7 @@ export function Sidebar({
                   const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
                   
                   return (
-                    <div key={project.id} className="pl-0.5 mb-1">
+                    <div key={project.id} className="pl-0.5 mb-0">
                       <div 
                         className={`flex items-center w-full ${
                           selectedProjectId === project.id 
@@ -487,12 +630,34 @@ export function Sidebar({
                           }`}
                           style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
                         >
-                          <button
-                            onClick={() => onProjectSelect(project.id)}
-                            className="truncate text-left hover:text-blue-600 transition-colors flex-1"
-                          >
-                            {project.name}
-                          </button>
+                          <div className="flex items-center gap-2 flex-1">
+                            {/* Progress Circle */}
+                            <div className="relative w-4 h-4">
+                              <svg className="w-4 h-4 -rotate-90" viewBox="0 0 36 36">
+                                <path
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none"
+                                  stroke="#e5e7eb"
+                                  strokeWidth="3"
+                                />
+                                {completionData && completionData.total > 0 && (
+                                  <path
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke={isCompleted ? "#10b981" : "#3b82f6"}
+                                    strokeWidth="3"
+                                    strokeDasharray={`${(completionData.completed / completionData.total) * 100}, 100`}
+                                  />
+                                )}
+                              </svg>
+                            </div>
+                            <button
+                              onClick={() => onProjectSelect(project.id)}
+                              className="truncate text-left hover:text-blue-600 transition-colors flex-1"
+                            >
+                              {project.name}
+                            </button>
+                          </div>
                           {taskCount > 0 && (
                             <span className="things-count-badge">
                               {taskCount}
@@ -571,10 +736,26 @@ export function Sidebar({
                     style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
                   >
                     <div className="flex items-center gap-2 flex-1">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: project.color || "#8E8E93" }}
-                      />
+                      {/* Progress Circle */}
+                      <div className="relative w-4 h-4">
+                        <svg className="w-4 h-4 -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#e5e7eb"
+                            strokeWidth="3"
+                          />
+                          {completionData && completionData.total > 0 && (
+                            <path
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              fill="none"
+                              stroke={isCompleted ? "#10b981" : "#3b82f6"}
+                              strokeWidth="3"
+                              strokeDasharray={`${(completionData.completed / completionData.total) * 100}, 100`}
+                            />
+                          )}
+                        </svg>
+                      </div>
                       <button
                         onClick={() => onProjectSelect(project.id)}
                         className="truncate text-left hover:text-blue-600 transition-colors flex-1"
