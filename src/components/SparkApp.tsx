@@ -327,9 +327,9 @@ export function SparkApp() {
         {/* Header */}
         <div className="p-6 pb-2">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{getViewTitle()}</h1>
+            <h1 className="project-title">{getViewTitle()}</h1>
             {getViewSubtitle() && (
-              <p className="text-sm text-gray-500 mt-1">{getViewSubtitle()}</p>
+              <p className="project-description mt-1">{getViewSubtitle()}</p>
             )}
           </div>
           

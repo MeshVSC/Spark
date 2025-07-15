@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { createArea } from "../lib/queries/areas";
+import { createArea, getAreas, updateArea } from "../lib/queries/areas";
 
 interface AreaFormProps {
+  editingAreaId?: string | null;
   onClose: () => void;
 }
 
@@ -116,11 +117,32 @@ const folderIcons = [
   }
 ];
 
-export function AreaForm({ onClose }: AreaFormProps) {
+export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedIcon, setSelectedIcon] = useState(folderIcons[0]);
+  const [loading, setLoading] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // Load existing area data if editing
+  useEffect(() => {
+    if (editingAreaId) {
+      setLoading(true);
+      getAreas().then(areas => {
+        const area = areas.find(a => a.id === editingAreaId);
+        if (area) {
+          setName(area.name);
+          setDescription(area.description || "");
+          // Find matching icon or default to first one
+          const matchingIcon = folderIcons.find(icon => icon.name === area.color) || folderIcons[0];
+          setSelectedIcon(matchingIcon);
+        }
+        setLoading(false);
+      }).catch(() => {
+        setLoading(false);
+      });
+    }
+  }, [editingAreaId]);
 
   // Handle click outside to close
   useEffect(() => {
@@ -141,15 +163,27 @@ export function AreaForm({ onClose }: AreaFormProps) {
     if (!name.trim()) return;
 
     try {
-      await createArea({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        color: selectedIcon.name, // Store icon name in color field for now
-      });
+      setLoading(true);
+      if (editingAreaId) {
+        // Update existing area
+        await updateArea(editingAreaId, {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          color: selectedIcon.name,
+        });
+      } else {
+        // Create new area
+        await createArea({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          color: selectedIcon.name,
+        });
+      }
       onClose();
     } catch (error) {
-      console.error("Failed to create area:", error);
-      // Optionally, display an error message to the user
+      console.error(editingAreaId ? "Failed to update area:" : "Failed to create area:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,7 +197,7 @@ export function AreaForm({ onClose }: AreaFormProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-1 py-2 text-xl font-medium border-none outline-none placeholder-gray-400 bg-transparent"
-            placeholder="New Folder"
+            placeholder={editingAreaId ? "Folder Name" : "New Folder"}
             autoFocus
           />
 
@@ -216,11 +250,11 @@ export function AreaForm({ onClose }: AreaFormProps) {
             <button
               type="submit"
               form="folderForm"
-              disabled={!name.trim()}
+              disabled={!name.trim() || loading}
               className="px-3 py-1 rounded text-xs disabled:opacity-50"
               style={{ background: "#90B1F6", color: "white" }}
             >
-              Create Folder
+              {loading ? "Saving..." : (editingAreaId ? "Save Changes" : "Create Folder")}
             </button>
           </div>
         </div>

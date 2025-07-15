@@ -171,10 +171,15 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
   };
 
   const ProjectHeader = ({ project }: { project: ProjectWithTasks }) => (
-    <div className="mb-4 group">
-      <div className="flex items-center justify-between mb-2">
-        {/* Project title */}
-        <h3 className="text-lg font-normal text-gray-900 flex-1">{project.name}</h3>
+    <div className="mb-6 group">
+      <div className="flex items-center justify-between mb-3">
+        {/* Project title with task stats */}
+        <div className="flex items-center gap-3 flex-1">
+          <h3 className="section-header">{project.name}</h3>
+          <span className="task-metadata">
+            {project.completedCount} of {project.totalCount}
+          </span>
+        </div>
         
         {/* Three dots menu */}
         <button 
@@ -190,19 +195,12 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
       </div>
       
       {/* Horizontal line */}
-      <div className="border-b border-gray-200 mb-3"></div>
+      <div className="border-b border-gray-200 mb-4"></div>
       
       {/* Project description */}
       {project.description && (
-        <p className="text-sm text-gray-500 mb-3">{project.description}</p>
+        <p className="project-description mb-4">{project.description}</p>
       )}
-      
-      {/* Task count and folder info */}
-      <div className="mb-3">
-        <p className="text-sm text-gray-500">
-          {project.totalCount} task{project.totalCount !== 1 ? 's' : ''} • {project.completedCount} completed
-        </p>
-      </div>
     </div>
   );
 
@@ -211,7 +209,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
     const filteredTasks = applyFilters(tasks);
 
     return (
-      <div className="space-y-0.5">
+      <div className="space-y-0">
         {filteredTasks.map((task) => (
           <TaskItem
             key={task.id}
@@ -251,7 +249,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
           <div key={project.id} className="space-y-3">
             <ProjectHeader project={project} />
             
-            <div className="space-y-0.5">
+            <div className="space-y-0">
               {filteredTasks.map((task) => (
                 <TaskItem
                   key={task.id}

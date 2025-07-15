@@ -64,8 +64,17 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
     setShowSubtaskForm(true);
   };
 
-  const handleSubtaskCreated = () => {
-    setShowSubtasks(true);
+  const handleSubtaskCreated = async () => {
+    try {
+      // Manually refresh subtasks to ensure they're up to date
+      const updatedSubtasks = await getSubtasks(task.id);
+      setSubtasks(updatedSubtasks);
+      setShowSubtasks(true);
+    } catch (error) {
+      console.error("Failed to refresh subtasks:", error);
+      // Still show subtasks section even if refresh fails
+      setShowSubtasks(true);
+    }
   };
 
   const completedSubtasks = subtasks.filter(s => s.completed).length;
@@ -95,7 +104,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                 >
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* Task title - comes first */}
-                    <span className="text-base font-medium">{task.title}</span>
+                    <span className="task-title">{task.title}</span>
                     
                     {/* Document/sheet icon - comes after title */}
                     {task.notes && (
@@ -112,7 +121,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                     {task.tags && task.tags.length > 0 && (
                       <div className="flex gap-1">
                         {task.tags.slice(0, 2).map((tag, index) => (
-                          <span key={index} className="things-tag">
+                          <span key={index} className="task-metadata things-tag">
                             {tag}
                           </span>
                         ))}
@@ -121,13 +130,13 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                     
                     {/* Dates - come after title */}
                     {task.due_date && (
-                      <span className="things-date-badge things-date-due">
+                      <span className="task-metadata things-date-badge things-date-due">
                         Due {formatDate(task.due_date)}
                       </span>
                     )}
                     
                     {task.scheduled_date && (
-                      <span className="things-date-badge things-date-scheduled">
+                      <span className="task-metadata things-date-badge things-date-scheduled">
                         {formatDate(task.scheduled_date)}
                       </span>
                     )}
@@ -136,7 +145,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
 
                 {/* Notes */}
                 {task.notes && (
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                  <p className="task-metadata mt-1 leading-relaxed">
                     {task.notes}
                   </p>
                 )}
@@ -145,7 +154,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                 {totalSubtasks > 0 && (
                   <button
                     onClick={() => setShowSubtasks(!showSubtasks)}
-                    className="text-xs text-blue-600 hover:text-blue-700 mt-1 flex items-center gap-1"
+                    className="task-metadata text-blue-600 hover:text-blue-700 mt-1 flex items-center gap-1"
                   >
                     <span>{completedSubtasks}/{totalSubtasks} subtasks</span>
                     <span className={`transform transition-transform ${showSubtasks ? 'rotate-90' : ''}`}>

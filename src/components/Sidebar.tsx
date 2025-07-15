@@ -383,7 +383,7 @@ export function Sidebar({
   );
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} flex flex-col border-r border-gray-200 transition-all duration-300`} style={{ background: '#F5F5F5' }}>
+    <div className={`${collapsed ? 'w-16' : 'w-64'} flex flex-col transition-all duration-300`} style={{ background: '#F5F5F5' }}>
       {/* Collapse button */}
       <div className="flex items-center justify-between p-4">
         {!collapsed && <h2 className="text-lg font-semibold text-gray-900">Spark</h2>}
@@ -399,9 +399,9 @@ export function Sidebar({
       </div>
 
       {/* Smart Lists Section */}
-      <div className="pt-8 pb-4">
+      <div className="pt-4 pb-2">
         {/* Group 1: Inbox & Completed - slightly separated */}
-        <div className="space-y-0 mb-2">
+        <div className="space-y-0" style={{ marginBottom: '12px' }}>
           {views.filter(view => view.id === 'inbox' || view.id === 'completed').map((view) => (
             <div
               key={view.id}
@@ -413,7 +413,7 @@ export function Sidebar({
             >
               <button
                 onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-normal w-full text-gray-700 ${
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal w-full text-gray-700 ${
                   currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
                 }`}
                 title={collapsed ? view.name : undefined}
@@ -435,7 +435,7 @@ export function Sidebar({
         </div>
         
         {/* Group 2: Today, Upcoming, Someday - close together */}
-        <div className="space-y-0 mb-2">
+        <div className="space-y-0" style={{ marginBottom: '12px' }}>
           {views.filter(view => ['today', 'upcoming', 'someday'].includes(view.id)).map((view) => (
             <div
               key={view.id}
@@ -447,7 +447,7 @@ export function Sidebar({
             >
               <button
                 onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-normal w-full text-gray-700 ${
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal w-full text-gray-700 ${
                   currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
                 }`}
                 title={collapsed ? view.name : undefined}
@@ -469,7 +469,7 @@ export function Sidebar({
         </div>
 
         {/* Group 3: Calendar and Time Blocking - close together */}
-        <div className="space-y-0 mb-2">
+        <div className="space-y-0" style={{ marginBottom: '12px' }}>
           {calendarViews.filter(view => ['calendar', 'timeblocking'].includes(view.id)).map((view) => (
             <div
               key={view.id}
@@ -481,7 +481,7 @@ export function Sidebar({
             >
               <button
                 onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-normal w-full text-gray-700 ${
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal w-full text-gray-700 ${
                   currentView === view.id ? 'text-gray-900' : ''
                 }`}
                 title={collapsed ? view.name : undefined}
@@ -506,7 +506,7 @@ export function Sidebar({
             >
               <button
                 onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-normal w-full text-gray-700 ${
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal w-full text-gray-700 ${
                   currentView === view.id ? 'text-gray-900' : ''
                 }`}
                 title={collapsed ? view.name : undefined}
@@ -530,7 +530,7 @@ export function Sidebar({
             const hasProjects = areaProjects.length > 0;
             
             return (
-              <div key={area.id} className="mb-2">
+              <div key={area.id} style={{ marginBottom: '12px' }}>
                 {/* Area */}
                 <div
                   className={`w-full group ${
@@ -542,9 +542,10 @@ export function Sidebar({
                   <div className="flex items-center w-full">
                     <button
                       onClick={() => onAreaSelect(area.id)}
-                      className={`flex items-center gap-3 py-1.5 text-sm font-normal flex-1 px-4 text-gray-700 ${
+                      className={`flex items-center gap-2 py-0.5 text-sm font-semibold flex-1 text-gray-700 ${
                         selectedAreaId === area.id ? 'text-gray-900' : ''
                       }`}
+                      style={{ paddingLeft: '18px', paddingRight: '1rem' }}
                     >
                       {getAreaIcon(area.color)}
                       <span className="truncate">{area.name}</span>
@@ -587,7 +588,7 @@ export function Sidebar({
                 </div>
                 
                 {/* Projects under this area */}
-                {!isAreaCollapsed && areaProjects.map((project) => {
+                {!isAreaCollapsed && areaProjects.map((project, index) => {
                   const taskCount = projectTaskCounts[project.id] || 0;
                   const isCollapsed = collapsedProjects.has(project.id);
                   const hasItems = taskCount > 0;
@@ -595,7 +596,7 @@ export function Sidebar({
                   const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
                   
                   return (
-                    <div key={project.id} className="pl-0.5 mb-0">
+                    <div key={project.id} className="pl-0.5" style={{ marginBottom: '0px', marginTop: index === 0 ? '6px' : '0px' }}>
                       <div 
                         className={`flex items-center w-full ${
                           selectedProjectId === project.id 
@@ -625,7 +626,7 @@ export function Sidebar({
                         
                         {/* Project button */}
                         <div
-                          className={`flex items-center gap-3 py-1.5 text-sm font-normal flex-1 text-gray-700 ${
+                          className={`flex items-center gap-3 py-0 text-sm font-light flex-1 text-gray-500 ${
                             selectedProjectId === project.id ? 'text-gray-900' : ''
                           }`}
                           style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
@@ -700,7 +701,7 @@ export function Sidebar({
             const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
             
             return (
-              <div key={project.id}>
+              <div key={project.id} style={{ marginBottom: '0px' }}>
                 <div 
                   className={`flex items-center w-full ${
                     selectedProjectId === project.id 
@@ -730,7 +731,7 @@ export function Sidebar({
                   
                   {/* Project button */}
                   <div
-                    className={`flex items-center gap-3 py-1.5 text-sm font-normal flex-1 text-gray-700 ${
+                    className={`flex items-center gap-3 py-0 text-sm font-light flex-1 text-gray-500 ${
                       selectedProjectId === project.id ? 'text-gray-900' : ''
                     }`}
                     style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}

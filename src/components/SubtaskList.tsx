@@ -68,8 +68,8 @@ export function SubtaskList({ taskId }: SubtaskListProps) {
             )}
           </button>
           
-          <span className={`flex-1 text-sm ${
-            subtask.completed ? "line-through text-gray-500" : "text-gray-700"
+          <span className={`flex-1 subtask-title ${
+            subtask.completed ? "line-through text-gray-500" : ""
           }`}>
             {subtask.title}
           </span>
