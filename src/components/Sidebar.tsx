@@ -21,6 +21,7 @@ interface SidebarProps {
   onProjectEdit: (projectId: string) => void;
   onNewProject: () => void;
   onNewArea: () => void;
+  onEditArea: (area: Area) => void;
   onNewTask: () => void;
   onQuickEntry: () => void;
   user: any;
@@ -38,6 +39,7 @@ export function Sidebar({
   onProjectEdit,
   onNewProject,
   onNewArea,
+  onEditArea,
   onNewTask,
   onQuickEntry,
   user,
