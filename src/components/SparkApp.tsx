@@ -39,6 +39,7 @@ export function SparkApp() {
   const [showRecurringForm, setShowRecurringForm] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showTaskEditForm, setShowTaskEditForm] = useState(false); // Corrected single declaration
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [taskFilters, setTaskFilters] = useState<{
     priority?: "low" | "medium" | "high";
     tags?: string[];
@@ -288,6 +289,8 @@ export function SparkApp() {
         onNewTask={() => setShowTaskForm(true)}
         onQuickEntry={() => setShowQuickEntry(true)}
         user={user}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
       {/* Main Content */}

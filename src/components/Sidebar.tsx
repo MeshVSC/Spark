@@ -24,6 +24,8 @@ interface SidebarProps {
   onNewTask: () => void;
   onQuickEntry: () => void;
   user: any;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 export function Sidebar({
@@ -39,6 +41,8 @@ export function Sidebar({
   onNewTask,
   onQuickEntry,
   user,
+  collapsed,
+  onToggleCollapse,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -296,15 +300,17 @@ export function Sidebar({
   );
 
   return (
-    <div className="w-64 flex flex-col border-r border-gray-200" style={{ background: '#F5F5F5' }}>
-      {/* Mobile collapse button */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Spark</h2>
-        <button className="p-1 rounded hover:bg-gray-100 transition-colors">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
+    <div className={`${collapsed ? 'w-16' : 'w-64'} flex flex-col border-r border-gray-200 transition-all duration-300`} style={{ background: '#F5F5F5' }}>
+      {/* Collapse button */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        {!collapsed && <h2 className="text-lg font-semibold text-gray-900">Spark</h2>}
+        <button 
+          onClick={onToggleCollapse}
+          className="p-1 rounded hover:bg-gray-200 transition-colors"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`}>
+            <polyline points="15,18 9,12 15,6"></polyline>
           </svg>
         </button>
       </div>
@@ -323,16 +329,21 @@ export function Sidebar({
             >
               <button
                 onClick={() => onViewChange(view.id)}
-                className={`flex items-center gap-3 py-1.5 text-sm font-medium w-full px-4 text-gray-700 ${
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-medium w-full text-gray-700 ${
                   currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
                 }`}
+                title={collapsed ? view.name : undefined}
               >
                 {view.icon}
-                <span className="flex-1 text-left">{view.name}</span>
-                {view.count > 0 && (
-                  <span className="things-count-badge">
-                    {view.count}
-                  </span>
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left">{view.name}</span>
+                    {view.count > 0 && (
+                      <span className="things-count-badge">
+                        {view.count}
+                      </span>
+                    )}
+                  </>
                 )}
               </button>
             </div>
@@ -348,12 +359,13 @@ export function Sidebar({
             >
               <button
                 onClick={() => onViewChange(view.id)}
-                className={`flex items-center gap-3 py-1.5 text-sm font-medium w-full px-4 text-gray-700 ${
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-medium w-full text-gray-700 ${
                   currentView === view.id ? 'text-gray-900' : ''
                 }`}
+                title={collapsed ? view.name : undefined}
               >
                 {view.icon}
-                <span className="flex-1 text-left">{view.name}</span>
+                {!collapsed && <span className="flex-1 text-left">{view.name}</span>}
               </button>
             </div>
           ))}
@@ -361,8 +373,9 @@ export function Sidebar({
       </div>
 
       {/* Folders and Projects Section */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto overflow-x-hidden">
+      {!collapsed && (
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto overflow-x-hidden">
           {/* Areas with their projects nested underneath */}
           {areas.map((area) => {
             const areaProjects = projects.filter(project => project.area_id === area.id);
@@ -688,13 +701,13 @@ export function Sidebar({
               </div>
             );
           })}
+          </div>
         </div>
-      </div>
-
+      )}
 
       {/* Bottom Menu */}
       <div className="border-t border-gray-200 px-4 py-2">
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
           <button
             onClick={onNewProject}
             className="p-1 rounded hover:bg-gray-200 transition-colors"
@@ -706,23 +719,25 @@ export function Sidebar({
             </svg>
           </button>
           
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-1 rounded hover:bg-gray-200 transition-colors"
-            title="Settings"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-              <line x1="4" y1="21" x2="4" y2="14"></line>
-              <line x1="4" y1="10" x2="4" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12" y2="3"></line>
-              <line x1="20" y1="21" x2="20" y2="16"></line>
-              <line x1="20" y1="12" x2="20" y2="3"></line>
-              <line x1="1" y1="14" x2="7" y2="14"></line>
-              <line x1="9" y1="8" x2="15" y2="8"></line>
-              <line x1="17" y1="16" x2="23" y2="16"></line>
-            </svg>
-          </button>
+          {!collapsed && (
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-1 rounded hover:bg-gray-200 transition-colors"
+              title="Settings"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="1" y1="14" x2="7" y2="14"></line>
+                <line x1="9" y1="8" x2="15" y2="8"></line>
+                <line x1="17" y1="16" x2="23" y2="16"></line>
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
