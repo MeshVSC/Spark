@@ -47,9 +47,6 @@ export default function App() {
           <div className="w-full max-w-md mx-auto">
             <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8">
               <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
-                  <span className="text-2xl">✨</span>
-                </div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Spark</h1>
                 <p className="text-gray-600">Get organized. Get focused. Get things done.</p>
               </div>
