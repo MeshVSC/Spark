@@ -318,8 +318,8 @@ export function Sidebar({
       </div>
 
       {/* Smart Lists Section */}
-      <div className="pt-6 pb-4">
-        <div className="space-y-0">
+      <div className="pt-8 pb-4">
+        <div className="space-y-1">
           {views.map((view) => (
             <div
               key={view.id}
@@ -331,7 +331,7 @@ export function Sidebar({
             >
               <button
                 onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-medium w-full text-gray-700 ${
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-normal w-full text-gray-700 ${
                   currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
                 }`}
                 title={collapsed ? view.name : undefined}
@@ -361,7 +361,7 @@ export function Sidebar({
             >
               <button
                 onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-medium w-full text-gray-700 ${
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-1.5 text-sm font-normal w-full text-gray-700 ${
                   currentView === view.id ? 'text-gray-900' : ''
                 }`}
                 title={collapsed ? view.name : undefined}
@@ -397,7 +397,7 @@ export function Sidebar({
                   <div className="flex items-center w-full">
                     <button
                       onClick={() => onAreaSelect(area.id)}
-                      className={`flex items-center gap-3 py-1.5 text-sm font-medium flex-1 px-4 text-gray-700 ${
+                      className={`flex items-center gap-3 py-1.5 text-sm font-normal flex-1 px-4 text-gray-700 ${
                         selectedAreaId === area.id ? 'text-gray-900' : ''
                       }`}
                     >
@@ -482,58 +482,17 @@ export function Sidebar({
                         
                         {/* Project button */}
                         <div
-                          className={`flex items-center gap-3 py-1.5 text-sm font-medium flex-1 text-gray-700 ${
+                          className={`flex items-center gap-3 py-1.5 text-sm font-normal flex-1 text-gray-700 ${
                             selectedProjectId === project.id ? 'text-gray-900' : ''
                           }`}
                           style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
                         >
                           <button
                             onClick={() => onProjectSelect(project.id)}
-                            className="flex items-center gap-2"
+                            className="truncate text-left hover:text-blue-600 transition-colors flex-1"
                           >
-                            {/* Progress completion indicator */}
-                            {completionData && completionData.total > 0 && (
-                              <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${
-                                isCompleted 
-                                  ? 'bg-blue-500 border-blue-500' 
-                                  : 'border-gray-300 bg-white'
-                              }`}>
-                                {isCompleted && (
-                                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                                    <polyline points="20,6 9,17 4,12" stroke="white" strokeWidth="4" fill="none"/>
-                                  </svg>
-                                )}
-                              </div>
-                            )}
+                            {project.name}
                           </button>
-                          <div className="flex items-center gap-2 flex-1">
-                            {/* Progress Circle */}
-                            <div className="relative w-4 h-4">
-                              <svg className="w-4 h-4 -rotate-90" viewBox="0 0 36 36">
-                                <path
-                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                  fill="none"
-                                  stroke="#e5e7eb"
-                                  strokeWidth="3"
-                                />
-                                {completionData && completionData.total > 0 && (
-                                  <path
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                    fill="none"
-                                    stroke={isCompleted ? "#10b981" : "#3b82f6"}
-                                    strokeWidth="3"
-                                    strokeDasharray={`${(completionData.completed / completionData.total) * 100}, 100`}
-                                  />
-                                )}
-                              </svg>
-                            </div>
-                            <button
-                              onClick={() => onProjectSelect(project.id)}
-                              className="truncate text-left hover:text-blue-600 transition-colors"
-                            >
-                              {project.name}
-                            </button>
-                          </div>
                           {taskCount > 0 && (
                             <span className="things-count-badge">
                               {taskCount}
@@ -606,57 +565,19 @@ export function Sidebar({
                   
                   {/* Project button */}
                   <div
-                    className={`flex items-center gap-3 py-1.5 text-sm font-medium flex-1 text-gray-700 ${
+                    className={`flex items-center gap-3 py-1.5 text-sm font-normal flex-1 text-gray-700 ${
                       selectedProjectId === project.id ? 'text-gray-900' : ''
                     }`}
                     style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
                   >
-                    <button
-                      onClick={() => onProjectSelect(project.id)}
-                      className="flex items-center gap-2"
-                    >
+                    <div className="flex items-center gap-2 flex-1">
                       <div
                         className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: project.color || "#8E8E93" }}
                       />
-                      {completionData && completionData.total > 0 && (
-                        <div className={`w-2 h-2 rounded-full border flex items-center justify-center ${
-                          isCompleted 
-                            ? 'bg-blue-500 border-blue-500' 
-                            : 'border-gray-300 bg-white'
-                        }`}>
-                          {isCompleted && (
-                            <svg width="6" height="6" viewBox="0 0 24 24" fill="none">
-                              <polyline points="20,6 9,17 4,12" stroke="white" strokeWidth="4" fill="none"/>
-                            </svg>
-                          )}
-                        </div>
-                      )}
-                    </button>
-                    <div className="flex items-center gap-2 flex-1">
-                      {/* Progress Circle */}
-                      <div className="relative w-4 h-4">
-                        <svg className="w-4 h-4 -rotate-90" viewBox="0 0 36 36">
-                          <path
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="#e5e7eb"
-                            strokeWidth="3"
-                          />
-                          {completionData && completionData.total > 0 && (
-                            <path
-                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                              fill="none"
-                              stroke={isCompleted ? "#10b981" : "#3b82f6"}
-                              strokeWidth="3"
-                              strokeDasharray={`${(completionData.completed / completionData.total) * 100}, 100`}
-                            />
-                          )}
-                        </svg>
-                      </div>
                       <button
                         onClick={() => onProjectSelect(project.id)}
-                        className="truncate text-left hover:text-blue-600 transition-colors"
+                        className="truncate text-left hover:text-blue-600 transition-colors flex-1"
                       >
                         {project.name}
                       </button>

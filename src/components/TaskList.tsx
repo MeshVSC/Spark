@@ -172,22 +172,9 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
 
   const ProjectHeader = ({ project }: { project: ProjectWithTasks }) => (
     <div className="mb-4 group">
-      <div className="flex items-center gap-3 mb-2">
-        {/* Completion circle */}
-        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-          project.completedCount === project.totalCount && project.totalCount > 0
-            ? 'bg-blue-500 border-blue-500'
-            : 'border-gray-300'
-        }`}>
-          {project.completedCount === project.totalCount && project.totalCount > 0 && (
-            <svg width="8" height="8" viewBox="0 0 24 24" fill="white">
-              <polyline points="20,6 9,17 4,12" stroke="white" strokeWidth="3" fill="none"/>
-            </svg>
-          )}
-        </div>
-        
+      <div className="flex items-center justify-between mb-2">
         {/* Project title */}
-        <h3 className="text-lg font-semibold text-gray-900 flex-1">{project.name}</h3>
+        <h3 className="text-lg font-normal text-gray-900 flex-1">{project.name}</h3>
         
         {/* Three dots menu */}
         <button 
@@ -202,21 +189,19 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
         </button>
       </div>
       
+      {/* Horizontal line */}
+      <div className="border-b border-gray-200 mb-3"></div>
+      
       {/* Project description */}
       {project.description && (
-        <p className="text-sm text-gray-500 mb-2 ml-7">{project.description}</p>
+        <p className="text-sm text-gray-500 mb-3">{project.description}</p>
       )}
       
-      {/* Filter tags placeholder */}
-      <div className="ml-7 mb-3">
-        <div className="flex gap-2">
-          <span className="things-tag">
-            Important
-          </span>
-          <span className="things-tag" style={{ background: 'rgba(0, 122, 255, 0.1)', color: 'var(--things-blue)' }}>
-            Work
-          </span>
-        </div>
+      {/* Task count and folder info */}
+      <div className="mb-3">
+        <p className="text-sm text-gray-500">
+          {project.totalCount} task{project.totalCount !== 1 ? 's' : ''} • {project.completedCount} completed
+        </p>
       </div>
     </div>
   );
@@ -266,7 +251,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
           <div key={project.id} className="space-y-3">
             <ProjectHeader project={project} />
             
-            <div className="space-y-0.5 ml-7">
+            <div className="space-y-0.5">
               {filteredTasks.map((task) => (
                 <TaskItem
                   key={task.id}

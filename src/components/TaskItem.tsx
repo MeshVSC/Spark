@@ -59,29 +59,6 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
     }
   };
 
-  const getPriorityIcon = (priority?: string | null) => {
-    switch (priority) {
-      case "high": 
-        return (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="#FF3B30">
-            <circle cx="12" cy="12" r="10"/>
-          </svg>
-        );
-      case "medium": 
-        return (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="#FF9500">
-            <circle cx="12" cy="12" r="10"/>
-          </svg>
-        );
-      case "low": 
-        return (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="#34C759">
-            <circle cx="12" cy="12" r="10"/>
-          </svg>
-        );
-      default: return null;
-    }
-  };
 
   const handleAddSubtask = () => {
     setShowSubtaskForm(true);
@@ -129,11 +106,6 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                         <polyline points="10,9 9,9 8,9"></polyline>
                       </svg>
-                    )}
-                    
-                    {/* Priority - comes after title */}
-                    {task.priority && (
-                      <span className="text-sm">{getPriorityIcon(task.priority)}</span>
                     )}
                     
                     {/* Tags - come after title */}

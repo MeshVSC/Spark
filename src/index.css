@@ -35,7 +35,7 @@ body {
 }
 
 .things-sidebar-item {
-  @apply flex items-center gap-3 py-1.5 text-sm font-medium transition-all duration-150;
+  @apply flex items-center gap-3 py-1.5 text-sm font-normal transition-all duration-150;
   color: var(--things-gray-700);
   margin: 0;
   border-radius: 0;
@@ -58,7 +58,7 @@ body {
 }
 
 .things-sidebar-button {
-  @apply flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150;
+  @apply flex items-center gap-3 px-4 py-2 text-sm font-normal rounded-lg transition-all duration-150;
   color: var(--things-gray-700);
   background: var(--things-gray-100);
 }
