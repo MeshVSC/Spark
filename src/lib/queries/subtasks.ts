@@ -50,7 +50,7 @@ export async function createSubtask(subtaskData: Omit<SubtaskInsert, 'user_id' |
       ...subtaskData,
       user_id: userId,
       completed: false,
-      sort_order: Date.now(),
+      sort_order: Math.floor(Date.now() / 1000), // Use seconds instead of milliseconds
     })
     .select()
     .single()

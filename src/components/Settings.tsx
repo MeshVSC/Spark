@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { CustomCheckbox } from "./CustomCheckbox";
+import { useSettings } from "../contexts/SettingsContext";
 
 interface SettingsProps {
   isOpen: boolean;
@@ -7,8 +8,9 @@ interface SettingsProps {
 }
 
 export function Settings({ isOpen, onClose }: SettingsProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'quickentry' | 'reminders' | 'calendar'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'quickentry' | 'reminders' | 'calendar' | 'shortcuts'>('general');
   const modalRef = useRef<HTMLDivElement>(null);
+  const { settings, updateSetting } = useSettings();
 
   // Handle click outside to close
   useEffect(() => {
@@ -89,11 +91,29 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
         </svg>
       )
     },
+    { 
+      id: 'shortcuts' as const, 
+      name: 'Shortcuts', 
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <path d="M9 9h6v6h-6z"></path>
+          <path d="M9 1v6"></path>
+          <path d="M15 1v6"></path>
+          <path d="M9 17v6"></path>
+          <path d="M15 17v6"></path>
+          <path d="M1 9h6"></path>
+          <path d="M1 15h6"></path>
+          <path d="M17 9h6"></path>
+          <path d="M17 15h6"></path>
+        </svg>
+      )
+    },
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
-      <div ref={modalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+    <div className="things-modal">
+      <div ref={modalRef} className="things-modal-content w-full max-w-2xl max-h-[80vh] overflow-hidden">
         {/* Header with tabs */}
         <div className="border-b border-gray-200">
           <div className="flex items-center justify-center pt-4 pb-2">
@@ -128,11 +148,16 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                   <label className="text-sm font-medium w-64 text-right pr-4" style={{ color: 'var(--things-gray-700)' }}>
                     Move completed items to Logbook:
                   </label>
-                  <select className="px-0 py-2 border-none bg-transparent text-xs outline-none" style={{ color: 'var(--things-gray-600)' }}>
-                    <option>Immediately</option>
-                    <option>After 1 day</option>
-                    <option>After 1 week</option>
-                    <option>Never</option>
+                  <select 
+                    value={settings.moveCompletedToLogbook} 
+                    onChange={(e) => updateSetting('moveCompletedToLogbook', e.target.value as any)}
+                    className="px-0 py-2 border-none bg-transparent text-xs outline-none" 
+                    style={{ color: 'var(--things-gray-600)' }}
+                  >
+                    <option value="immediately">Immediately</option>
+                    <option value="after1day">After 1 day</option>
+                    <option value="after1week">After 1 week</option>
+                    <option value="never">Never</option>
                   </select>
                 </div>
                 
@@ -140,18 +165,75 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                   <label className="text-sm font-medium w-64 text-right pr-4" style={{ color: 'var(--things-gray-700)' }}>
                     Badge count:
                   </label>
-                  <select className="px-0 py-2 border-none bg-transparent text-xs outline-none" style={{ color: 'var(--things-gray-600)' }}>
-                    <option>Today</option>
-                    <option>Inbox</option>
-                    <option>All</option>
-                    <option>None</option>
+                  <select 
+                    value={settings.badgeCount} 
+                    onChange={(e) => updateSetting('badgeCount', e.target.value as any)}
+                    className="px-0 py-2 border-none bg-transparent text-xs outline-none" 
+                    style={{ color: 'var(--things-gray-600)' }}
+                  >
+                    <option value="today">Today</option>
+                    <option value="inbox">Inbox</option>
+                    <option value="all">All</option>
+                    <option value="none">None</option>
                   </select>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <CustomCheckbox checked={true} className="mt-1" />
+                  <CustomCheckbox 
+                    checked={settings.showViewCounts} 
+                    onChange={(checked) => updateSetting('showViewCounts', checked)}
+                    className="mt-1" 
+                  />
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
+                      Show task counts for views
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--things-gray-500)' }}>
+                      Display numbers next to Inbox, Today, Completed, etc.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CustomCheckbox 
+                    checked={settings.showProjectCounts} 
+                    onChange={(checked) => updateSetting('showProjectCounts', checked)}
+                    className="mt-1" 
+                  />
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
+                      Show task counts for projects
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--things-gray-500)' }}>
+                      Display numbers next to project names
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CustomCheckbox 
+                    checked={settings.showProjectDropdowns} 
+                    onChange={(checked) => updateSetting('showProjectDropdowns', checked)}
+                    className="mt-1" 
+                  />
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
+                      Show project dropdown arrows
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--things-gray-500)' }}>
+                      Display arrows to expand/collapse project task lists
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CustomCheckbox 
+                    checked={settings.groupTodosByProject} 
+                    onChange={(checked) => updateSetting('groupTodosByProject', checked)}
+                    className="mt-1" 
+                  />
                   <div>
                     <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
                       Group to-dos in the Today list by project or area
@@ -163,7 +245,11 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <CustomCheckbox checked={false} className="mt-1" />
+                  <CustomCheckbox 
+                    checked={settings.smartTimeGrouping} 
+                    onChange={(checked) => updateSetting('smartTimeGrouping', checked)}
+                    className="mt-1" 
+                  />
                   <div>
                     <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
                       Smart time grouping in Today view
@@ -175,7 +261,11 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <CustomCheckbox checked={true} className="mt-1" />
+                  <CustomCheckbox 
+                    checked={settings.preserveWindowWidth} 
+                    onChange={(checked) => updateSetting('preserveWindowWidth', checked)}
+                    className="mt-1" 
+                  />
                   <div>
                     <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
                       Preserve window width when resizing sidebar
@@ -187,7 +277,11 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <CustomCheckbox checked={false} className="mt-1" />
+                  <CustomCheckbox 
+                    checked={settings.showEmptyTimePeriods} 
+                    onChange={(checked) => updateSetting('showEmptyTimePeriods', checked)}
+                    className="mt-1" 
+                  />
                   <div>
                     <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
                       Show empty time periods
@@ -335,21 +429,92 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
               </div>
             </div>
           )}
+
+          {activeTab === 'shortcuts' && (
+            <div className="space-y-6">
+              <div className="text-sm font-medium mb-4" style={{ color: 'var(--things-gray-700)' }}>
+                Keyboard Shortcuts
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Quick Entry</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>N</kbd>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Search</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>F</kbd>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Settings</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>,</kbd>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Today View</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>1</kbd>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Inbox View</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>2</kbd>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Upcoming View</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>3</kbd>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Completed View</span>
+                  <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>4</kbd>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="border-t flex justify-end gap-2 px-6 py-4" style={{ borderColor: 'var(--things-gray-200)' }}>
           <button
             onClick={onClose}
-            className="px-2 py-1 text-xs transition-all duration-150"
-            style={{ color: 'var(--things-gray-500)' }}
+            className="things-button-secondary"
           >
             Cancel
           </button>
           <button
             onClick={onClose}
-            className="px-3 py-1 rounded text-xs font-medium transition-all duration-150"
-            style={{ backgroundColor: '#90B1F6', color: 'white' }}
+            className="things-button-primary"
           >
             Done
           </button>

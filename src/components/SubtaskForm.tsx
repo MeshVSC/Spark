@@ -40,15 +40,12 @@ export function SubtaskForm({ isVisible, onClose, taskId, onSubtaskCreated }: Su
     if (!title.trim()) return;
 
     try {
-      console.log('🚀 Creating subtask...');
       await createSubtask({
         task_id: taskId,
         title: title.trim(),
       });
-      console.log('✅ Subtask created successfully');
       
       if (onSubtaskCreated) {
-        console.log('🔄 Triggering subtask refresh...');
         onSubtaskCreated();
       }
       
@@ -56,6 +53,7 @@ export function SubtaskForm({ isVisible, onClose, taskId, onSubtaskCreated }: Su
       onClose();
     } catch (error) {
       console.error("Failed to create subtask:", error);
+      alert(`Failed to create subtask: ${error.message}`);
     }
   };
 
@@ -86,7 +84,7 @@ export function SubtaskForm({ isVisible, onClose, taskId, onSubtaskCreated }: Su
             <button
               type="submit"
               disabled={!title.trim()}
-              className="px-3 py-1 bg-blue-600 text-white rounded text-xs disabled:opacity-50"
+              className="things-button-primary disabled:opacity-50"
             >
               Add
             </button>

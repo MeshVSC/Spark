@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CustomCheckboxProps {
   checked?: boolean;
@@ -8,6 +8,11 @@ interface CustomCheckboxProps {
 
 export function CustomCheckbox({ checked = false, onChange, className = "" }: CustomCheckboxProps) {
   const [isChecked, setIsChecked] = useState(checked);
+
+  // Sync with external checked prop
+  useEffect(() => {
+    setIsChecked(checked);
+  }, [checked]);
 
   const handleClick = () => {
     const newValue = !isChecked;

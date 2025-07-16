@@ -22,7 +22,7 @@ export async function getTasks({
   projectId,
   areaId,
 }: {
-  view?: 'inbox' | 'today' | 'upcoming' | 'someday' | 'completed'
+  view?: 'inbox' | 'today' | 'upcoming' | 'someday' | 'completed' | 'stats'
   projectId?: string | null
   areaId?: string | null
 } = {}) {
@@ -79,6 +79,8 @@ export async function getTasks({
         return task.completed
       case 'all':
         return !task.completed  // Return all non-completed tasks for grouping
+      case 'stats':
+        return true  // Return all tasks (completed and incomplete) for statistics
       default:
         return !task.completed
     }

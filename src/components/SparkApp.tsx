@@ -11,7 +11,6 @@ import { ProjectForm } from "./ProjectForm";
 import { AreaForm } from "./AreaForm";
 import { QuickEntry } from "./QuickEntry";
 import { TaskSearch } from "./TaskSearch";
-import { TaskStats } from "./TaskStats";
 import { TaskFilters } from "./TaskFilters";
 import { CalendarView } from "./CalendarView";
 import { TimeBlockingView } from "./TimeBlockingView";
@@ -447,13 +446,6 @@ export function SparkApp() {
               </div>
             ) : (
               <>
-                {/* Stats */}
-                <TaskStats
-                  view={currentView}
-                  projectId={selectedProjectId}
-                  areaId={selectedAreaId}
-                />
-
                 {/* Filters */}
                 <TaskFilters onFilterChange={setTaskFilters} />
 

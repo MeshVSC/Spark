@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { SparkApp } from "./components/SparkApp";
 import { onAuthStateChange } from "./lib/auth";
 import { testSupabaseConnection } from "./lib/supabase";
+import { SettingsProvider } from "./contexts/SettingsContext";
 import type { User } from '@supabase/supabase-js';
 
 export default function App() {
@@ -39,26 +40,28 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#FAFAFA' }}>
-      {user ? (
-        <SparkApp />
-      ) : (
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="w-full max-w-md mx-auto">
-            <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Spark</h1>
-                <p className="text-gray-600">Get organized. Get focused. Get things done.</p>
-              </div>
-              <SignInForm />
-              <div className="mt-8 text-center">
-                <p className="text-xs text-gray-400">© Mesh 2025</p>
+    <SettingsProvider>
+      <div className="min-h-screen flex flex-col" style={{ background: '#FAFAFA' }}>
+        {user ? (
+          <SparkApp />
+        ) : (
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="w-full max-w-md mx-auto">
+              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8">
+                <div className="text-center mb-8">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Spark</h1>
+                  <p className="text-gray-600">Get organized. Get focused. Get things done.</p>
+                </div>
+                <SignInForm />
+                <div className="mt-8 text-center">
+                  <p className="text-xs text-gray-400">© Mesh 2025</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-      <Toaster />
-    </div>
+        )}
+        <Toaster />
+      </div>
+    </SettingsProvider>
   );
 }

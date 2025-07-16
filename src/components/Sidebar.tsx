@@ -4,7 +4,49 @@ import { getAreas, subscribeToAreas } from "../lib/queries/areas";
 import { getTaskStats, subscribeToTasks, getTasks } from "../lib/queries/tasks";
 import { SignOutButton } from "../SignOutButton";
 import { Settings } from "./Settings";
+import { useSettings } from "../contexts/SettingsContext";
 import type { Database } from "../lib/supabase";
+
+// Progress circle component
+const ProgressCircle = ({ completion, size = 16 }: { completion: number, size?: number }) => {
+  const radius = size / 2 - 2;
+  const innerRadius = radius - 1.5;
+  const progressRadius = innerRadius - 1;
+  
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
+        {/* Outer rim - darker gray */}
+        <circle 
+          cx={size / 2} 
+          cy={size / 2} 
+          r={radius} 
+          fill="#CCCCCC" 
+        />
+        {/* Inner background - lighter gray */}
+        <circle 
+          cx={size / 2} 
+          cy={size / 2} 
+          r={innerRadius} 
+          fill="#EEEEEE" 
+        />
+        {/* Progress fill - lighter gray */}
+        {completion > 0 && (
+          <circle 
+            cx={size / 2} 
+            cy={size / 2} 
+            r={progressRadius} 
+            fill="none"
+            stroke="#CCCCCC"
+            strokeWidth="2"
+            strokeDasharray={`${Math.round(completion)} 100`}
+            pathLength="100"
+          />
+        )}
+      </svg>
+    </div>
+  );
+};
 
 // Icon mapping for areas - returns JSX elements instead of emoji
 const getAreaIcon = (iconName?: string | null) => {
@@ -137,6 +179,7 @@ export function Sidebar({
   const [projectTasks, setProjectTasks] = useState<Record<string, Task[]>>({});
   const [projectCompletionStats, setProjectCompletionStats] = useState<Record<string, { completed: number; total: number }>>({});
   const [showSettings, setShowSettings] = useState(false);
+  const { settings } = useSettings();
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -145,7 +188,7 @@ export function Sidebar({
           getProjects(),
           getAreas(),
           getTaskStats(),
-          getTasks({ view: "inbox" })
+          getTasks({ view: "stats" }) // Get all tasks (completed and incomplete) for statistics
         ]);
         setProjects(initialProjects);
         setAreas(initialAreas);
@@ -181,6 +224,10 @@ export function Sidebar({
         setProjectTaskCounts(counts);
         setProjectTasks(tasksByProject);
         setProjectCompletionStats(completionStats);
+        
+        // Debug logging
+        console.log('🎯 Initial project completion stats:', completionStats);
+        console.log('📊 Initial project task counts:', counts);
       } catch (error) {
         console.error("Failed to fetch initial sidebar data:", error);
       }
@@ -218,7 +265,7 @@ export function Sidebar({
         setTaskStats(stats);
         
         // Recalculate task counts and group tasks
-        const allTasks = await getTasks({ view: "inbox" });
+        const allTasks = await getTasks({ view: "stats" }); // Get all tasks (completed and incomplete) for statistics
         const counts: Record<string, number> = {};
         const tasksByProject: Record<string, Task[]> = {};
         const completionStats: Record<string, { completed: number; total: number }> = {};
@@ -248,6 +295,10 @@ export function Sidebar({
         setProjectTaskCounts(counts);
         setProjectTasks(tasksByProject);
         setProjectCompletionStats(completionStats);
+        
+        // Debug logging
+        console.log('🔄 Updated project completion stats:', completionStats);
+        console.log('📊 Updated project task counts:', counts);
       } catch (error) {
         console.error("Failed to fetch updated task stats:", error);
       }
@@ -418,12 +469,17 @@ export function Sidebar({
                 }`}
                 title={collapsed ? view.name : undefined}
               >
+                {!collapsed && (
+                  <ProgressCircle 
+                    completion={view.id === 'completed' ? 100 : 0} 
+                  />
+                )}
                 {view.icon}
                 {!collapsed && (
                   <>
                     <span className="flex-1 text-left">{view.name}</span>
-                    {view.count > 0 && (
-                      <span className="things-count-badge">
+                    {settings.showViewCounts && view.count > 0 && (
+                      <span className="text-xs text-gray-500 font-medium">
                         {view.count}
                       </span>
                     )}
@@ -452,12 +508,21 @@ export function Sidebar({
                 }`}
                 title={collapsed ? view.name : undefined}
               >
+                {!collapsed && (
+                  <ProgressCircle 
+                    completion={
+                      view.id === 'today' ? (taskStats?.dueToday > 0 ? 50 : 0) : 
+                      view.id === 'upcoming' ? 25 : 
+                      view.id === 'someday' ? 75 : 0
+                    } 
+                  />
+                )}
                 {view.icon}
                 {!collapsed && (
                   <>
                     <span className="flex-1 text-left">{view.name}</span>
-                    {view.count > 0 && (
-                      <span className="things-count-badge">
+                    {settings.showViewCounts && view.count > 0 && (
+                      <span className="text-xs text-gray-500 font-medium">
                         {view.count}
                       </span>
                     )}
@@ -595,6 +660,15 @@ export function Sidebar({
                   const completionData = projectCompletionStats[project.id];
                   const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
                   
+                  // Debug logging
+                  console.log(`🎯 Project ${project.name}:`, {
+                    id: project.id,
+                    completionData,
+                    taskCount,
+                    hasCompletionData: !!completionData,
+                    shouldShowProgress: completionData && completionData.total > 0
+                  });
+                  
                   return (
                     <div key={project.id} className="pl-0.5" style={{ marginBottom: '0px', marginTop: index === 0 ? '6px' : '0px' }}>
                       <div 
@@ -604,11 +678,41 @@ export function Sidebar({
                             : 'hover:bg-gray-200'
                         } transition-all duration-150`}
                       >
-                        {/* Collapse/expand arrow */}
-                        {hasItems && (
+                        {/* Project button */}
+                        <div
+                          className={`flex items-center gap-3 py-0 text-sm font-light flex-1 text-gray-500 ${
+                            selectedProjectId === project.id ? 'text-gray-900' : ''
+                          }`}
+                          style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            {/* Progress Circle */}
+                            <ProgressCircle 
+                              completion={
+                                completionData && completionData.total > 0 
+                                  ? Math.round((completionData.completed / completionData.total) * 100)
+                                  : 0
+                              } 
+                            />
+                            <button
+                              onClick={() => onProjectSelect(project.id)}
+                              className="truncate text-left hover:text-blue-600 transition-colors flex-1"
+                            >
+                              {project.name}
+                            </button>
+                          </div>
+                          {settings.showProjectCounts && taskCount > 0 && (
+                            <span className="text-xs text-gray-500 font-medium">
+                              {taskCount}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Collapse/expand arrow - moved to right */}
+                        {settings.showProjectDropdowns && hasItems && (
                           <button
                             onClick={() => toggleProjectCollapse(project.id)}
-                            className="p-1 pl-2 transition-colors"
+                            className="p-1 pr-2 transition-colors"
                           >
                             <svg
                               width="12"
@@ -623,52 +727,10 @@ export function Sidebar({
                             </svg>
                           </button>
                         )}
-                        
-                        {/* Project button */}
-                        <div
-                          className={`flex items-center gap-3 py-0 text-sm font-light flex-1 text-gray-500 ${
-                            selectedProjectId === project.id ? 'text-gray-900' : ''
-                          }`}
-                          style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
-                        >
-                          <div className="flex items-center gap-2 flex-1">
-                            {/* Progress Circle */}
-                            <div className="relative w-4 h-4">
-                              <svg className="w-4 h-4 -rotate-90" viewBox="0 0 36 36">
-                                <path
-                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                  fill="none"
-                                  stroke="#e5e7eb"
-                                  strokeWidth="3"
-                                />
-                                {completionData && completionData.total > 0 && (
-                                  <path
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                    fill="none"
-                                    stroke={isCompleted ? "#10b981" : "#3b82f6"}
-                                    strokeWidth="3"
-                                    strokeDasharray={`${(completionData.completed / completionData.total) * 100}, 100`}
-                                  />
-                                )}
-                              </svg>
-                            </div>
-                            <button
-                              onClick={() => onProjectSelect(project.id)}
-                              className="truncate text-left hover:text-blue-600 transition-colors flex-1"
-                            >
-                              {project.name}
-                            </button>
-                          </div>
-                          {taskCount > 0 && (
-                            <span className="things-count-badge">
-                              {taskCount}
-                            </span>
-                          )}
-                        </div>
                       </div>
                       
                       {/* Tasks shown when expanded */}
-                      {hasItems && !isCollapsed && (
+                      {hasItems && settings.showProjectDropdowns && !isCollapsed && (
                         <div className="ml-5 border-l border-gray-200 pl-2 space-y-0">
                           {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
                             <div key={task.id} className="flex items-center gap-2 py-0.5 text-xs text-gray-600">
@@ -709,11 +771,41 @@ export function Sidebar({
                       : 'hover:bg-gray-200'
                   } transition-all duration-150`}
                 >
-                  {/* Collapse/expand arrow */}
-                  {hasItems && (
+                  {/* Project button */}
+                  <div
+                    className={`flex items-center gap-3 py-0 text-sm font-light flex-1 text-gray-500 ${
+                      selectedProjectId === project.id ? 'text-gray-900' : ''
+                    }`}
+                    style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
+                  >
+                    <div className="flex items-center gap-2 flex-1">
+                      {/* Progress Circle */}
+                      <ProgressCircle 
+                        completion={
+                          completionData && completionData.total > 0 
+                            ? Math.round((completionData.completed / completionData.total) * 100)
+                            : 0
+                        } 
+                      />
+                      <button
+                        onClick={() => onProjectSelect(project.id)}
+                        className="truncate text-left hover:text-blue-600 transition-colors flex-1"
+                      >
+                        {project.name}
+                      </button>
+                    </div>
+                    {settings.showProjectCounts && taskCount > 0 && (
+                      <span className="text-xs text-gray-500 font-medium">
+                        {taskCount}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Collapse/expand arrow - moved to right */}
+                  {settings.showProjectDropdowns && hasItems && (
                     <button
                       onClick={() => toggleProjectCollapse(project.id)}
-                      className="p-1 pl-2 transition-colors"
+                      className="p-1 pr-2 transition-colors"
                     >
                       <svg
                         width="12"
@@ -728,52 +820,10 @@ export function Sidebar({
                       </svg>
                     </button>
                   )}
-                  
-                  {/* Project button */}
-                  <div
-                    className={`flex items-center gap-3 py-0 text-sm font-light flex-1 text-gray-500 ${
-                      selectedProjectId === project.id ? 'text-gray-900' : ''
-                    }`}
-                    style={{ paddingLeft: hasItems ? '0.5rem' : '1rem', paddingRight: '1rem' }}
-                  >
-                    <div className="flex items-center gap-2 flex-1">
-                      {/* Progress Circle */}
-                      <div className="relative w-4 h-4">
-                        <svg className="w-4 h-4 -rotate-90" viewBox="0 0 36 36">
-                          <path
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="#e5e7eb"
-                            strokeWidth="3"
-                          />
-                          {completionData && completionData.total > 0 && (
-                            <path
-                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                              fill="none"
-                              stroke={isCompleted ? "#10b981" : "#3b82f6"}
-                              strokeWidth="3"
-                              strokeDasharray={`${(completionData.completed / completionData.total) * 100}, 100`}
-                            />
-                          )}
-                        </svg>
-                      </div>
-                      <button
-                        onClick={() => onProjectSelect(project.id)}
-                        className="truncate text-left hover:text-blue-600 transition-colors flex-1"
-                      >
-                        {project.name}
-                      </button>
-                    </div>
-                    {taskCount > 0 && (
-                      <span className="things-count-badge">
-                        {taskCount}
-                      </span>
-                    )}
-                  </div>
                 </div>
                 
                 {/* Tasks shown when expanded */}
-                {hasItems && !isCollapsed && (
+                {hasItems && settings.showProjectDropdowns && !isCollapsed && (
                   <div className="ml-5 border-l border-gray-200 pl-2 space-y-0">
                     {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
                       <div
@@ -798,7 +848,7 @@ export function Sidebar({
                 )}
                 
                 {/* Collapsed indicator */}
-                {hasItems && isCollapsed && (
+                {hasItems && settings.showProjectDropdowns && isCollapsed && (
                   <div className="ml-8 text-xs text-gray-400 pb-1">
                     {taskCount} item{taskCount !== 1 ? 's' : ''}
                   </div>

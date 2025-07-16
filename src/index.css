@@ -101,7 +101,8 @@ body {
 }
 
 .things-button-primary:hover {
-  background: var(--things-blue-hover);
+  background: #90B1F6;
+  opacity: 0.9;
 }
 
 .things-button-secondary {
