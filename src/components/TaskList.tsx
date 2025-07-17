@@ -94,9 +94,6 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
 
   // Group tasks by project when not viewing a specific project
   useEffect(() => {
-    console.log('TaskList useEffect - tasks:', tasks);
-    console.log('TaskList useEffect - projects:', projects);
-    console.log('TaskList useEffect - projectId:', projectId, 'areaId:', areaId);
     
     if (projectId || areaId || !projects.length) {
       setProjectsWithTasks([]);
@@ -281,9 +278,6 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     <div className="space-y-12">
       {projectsWithTasks.map((project, index) => {
         const filteredTasks = applyFilters(project.tasks);
-        console.log(`Project ${project.name}:`, project.tasks);
-        console.log(`Filtered tasks for project ${project.name}:`, filteredTasks);
-        console.log('Current filters:', filters);
         if (filteredTasks.length === 0) return null;
         
         return (

@@ -189,16 +189,14 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
 
     try {
       if (task) {
-        console.log('🔄 Updating task...');
         await updateTask(task.id, taskData);
-        console.log('✅ Task updated successfully');
       } else {
-        console.log('🚀 Creating task...');
         await createTask(taskData);
-        console.log('✅ Task created successfully');
       }
       
+
       await refresh();
+
       
       onClose();
     } catch (error) {

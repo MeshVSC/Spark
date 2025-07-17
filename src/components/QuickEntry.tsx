@@ -116,16 +116,16 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
     if (!title.trim()) return;
 
     try {
-      console.log('🚀 Creating task...');
       await createTask({
         title: title.trim(),
         project_id: projectId,
         area_id: areaId,
         due_date: dueDate ? new Date(dueDate).toISOString() : null,
       });
-      console.log('✅ Task created successfully');
       
+
       await refresh();
+
       
       setTitle("");
       setDueDate("");
@@ -252,7 +252,6 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('Calendar button clicked', showDatePicker);
                   setShowDatePicker(!showDatePicker);
                 }}
                 className={`p-1 rounded transition-colors ${

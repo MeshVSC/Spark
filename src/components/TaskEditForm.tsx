@@ -160,7 +160,6 @@ export function TaskEditForm({ task, onClose }: TaskEditFormProps) {
     if (!title.trim()) return;
 
     try {
-      console.log('🔄 Updating task...');
       await updateTask(task.id, {
         title: title.trim(),
         notes: notes.trim() || null,
@@ -171,9 +170,10 @@ export function TaskEditForm({ task, onClose }: TaskEditFormProps) {
         area_id: selectedAreaId || null,
         tags: tags.trim() ? tags.split(",").map(tag => tag.trim()) : [],
       });
-      console.log('✅ Task updated successfully');
       
+
       await refresh();
+
       
       onClose();
     } catch (error) {
