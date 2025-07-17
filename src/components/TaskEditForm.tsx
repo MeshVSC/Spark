@@ -159,7 +159,6 @@ export function TaskEditForm({ task, onClose, onTaskUpdated }: TaskEditFormProps
     if (!title.trim()) return;
 
     try {
-      console.log('🔄 Updating task...');
       await updateTask(task.id, {
         title: title.trim(),
         notes: notes.trim() || null,
@@ -170,11 +169,9 @@ export function TaskEditForm({ task, onClose, onTaskUpdated }: TaskEditFormProps
         area_id: selectedAreaId || null,
         tags: tags.trim() ? tags.split(",").map(tag => tag.trim()) : [],
       });
-      console.log('✅ Task updated successfully');
       
       // Manually refresh task cache immediately
       if (onTaskUpdated) {
-        console.log('🔄 Triggering cache refresh...');
         onTaskUpdated();
       }
       
