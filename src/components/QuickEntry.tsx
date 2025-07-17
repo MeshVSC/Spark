@@ -114,18 +114,15 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId, onTaskCreate
     if (!title.trim()) return;
 
     try {
-      console.log('🚀 Creating task...');
       await createTask({
         title: title.trim(),
         project_id: projectId,
         area_id: areaId,
         due_date: dueDate ? new Date(dueDate).toISOString() : null,
       });
-      console.log('✅ Task created successfully');
       
       // Manually refresh task cache immediately
       if (onTaskCreated) {
-        console.log('🔄 Triggering cache refresh...');
         onTaskCreated();
       }
       
@@ -254,7 +251,6 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId, onTaskCreate
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('Calendar button clicked', showDatePicker);
                   setShowDatePicker(!showDatePicker);
                 }}
                 className={`p-1 rounded transition-colors ${

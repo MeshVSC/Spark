@@ -166,9 +166,7 @@ export function SparkApp() {
   // Function to manually refresh the task cache
   const refreshTaskCache = async () => {
     try {
-      console.log('📝 Manually refreshing task cache...');
       const updatedTasks = await getTasks({ view: 'all' });
-      console.log('📝 Manual cache refresh:', updatedTasks.length, 'tasks');
       setAllTasks(updatedTasks);
     } catch (error) {
       console.error('Error manually refreshing task cache:', error);
@@ -184,7 +182,6 @@ export function SparkApp() {
     // Fetch ALL tasks once and cache them
     getTasks({ view: 'all' })
       .then((fetchedTasks) => {
-        console.log('All tasks cached on startup:', fetchedTasks.length, 'tasks');
         setAllTasks(fetchedTasks);
       })
       .catch((error) => {
@@ -193,12 +190,9 @@ export function SparkApp() {
       });
 
     // Subscribe to task changes to keep cache updated
-    console.log('Setting up task subscription...');
     const taskSubscription = subscribeToTasks(async () => {
       try {
-        console.log('🔥 Task change detected, updating cache...');
         const updatedTasks = await getTasks({ view: 'all' });
-        console.log('🔥 Cache updated with:', updatedTasks.length, 'tasks');
         setAllTasks(updatedTasks);
       } catch (error) {
         console.error('Error updating task cache:', error);
@@ -213,7 +207,6 @@ export function SparkApp() {
   // Filter cached tasks instantly when view/project changes
   useEffect(() => {
     const filterTasks = () => {
-      console.log('Filtering tasks instantly for:', { currentView, selectedProjectId, selectedAreaId });
       
       let filteredTasks = allTasks;
       
@@ -250,8 +243,6 @@ export function SparkApp() {
         filteredTasks = filteredTasks.filter(task => !task.completed);
       }
       
-      console.log('Filtered tasks result:', filteredTasks);
-      console.log('Setting tasks to:', filteredTasks.length, 'tasks');
       setTasks(filteredTasks);
     };
     
@@ -373,7 +364,6 @@ export function SparkApp() {
         selectedProjectId={selectedProjectId}
         selectedAreaId={selectedAreaId}
         onProjectSelect={(projectId) => {
-          console.log('Project selected:', projectId);
           setSelectedProjectId(projectId);
           setSelectedAreaId(null);
           setCurrentView("inbox");
@@ -390,11 +380,9 @@ export function SparkApp() {
           setShowProjectForm(true);
         }}
         onNewProject={() => {
-          console.log("New folder/area clicked");
           setShowAreaForm(true);
         }}
         onNewArea={() => {
-          console.log("New area clicked");
           setShowAreaForm(true);
         }}
         onEditArea={(area) => {

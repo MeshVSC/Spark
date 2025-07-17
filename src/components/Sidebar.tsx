@@ -186,8 +186,6 @@ export function Sidebar({
         setProjectCompletionStats(completionStats);
         
         // Debug logging
-        console.log('🎯 Initial project completion stats:', completionStats);
-        console.log('📊 Initial project task counts:', counts);
       } catch (error) {
         console.error("Failed to fetch initial sidebar data:", error);
       }
@@ -197,9 +195,7 @@ export function Sidebar({
 
     const projectSubscription = subscribeToProjects(async () => {
       try {
-        console.log('🔄 Project subscription triggered, fetching updated projects...');
         const updatedProjects = await getProjects();
-        console.log('✅ Projects updated:', updatedProjects.length);
         setProjects(updatedProjects);
       } catch (error) {
         console.error("Failed to fetch updated projects:", error);
@@ -208,9 +204,7 @@ export function Sidebar({
     
     const areaSubscription = subscribeToAreas(async () => {
       try {
-        console.log('🔄 Area subscription triggered, fetching updated areas...');
         const updatedAreas = await getAreas();
-        console.log('✅ Areas updated:', updatedAreas.length);
         setAreas(updatedAreas);
       } catch (error) {
         console.error("Failed to fetch updated areas:", error);
@@ -257,8 +251,6 @@ export function Sidebar({
         setProjectCompletionStats(completionStats);
         
         // Debug logging
-        console.log('🔄 Updated project completion stats:', completionStats);
-        console.log('📊 Updated project task counts:', counts);
       } catch (error) {
         console.error("Failed to fetch updated task stats:", error);
       }
@@ -607,7 +599,6 @@ export function Sidebar({
                   const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
                   
                   // Debug logging
-                  console.log(`🎯 Project ${project.name}:`, {
                     id: project.id,
                     completionData,
                     taskCount,
