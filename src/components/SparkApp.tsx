@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { User } from "@supabase/supabase-js";
 import { getCurrentUser, signOut } from "../lib/auth";
 import { getTaskStats, getTasks, subscribeToTasks } from "../lib/queries/tasks";
 import { getProjects } from "../lib/queries/projects";
@@ -156,7 +157,7 @@ export function SparkApp() {
     dateRange?: "today" | "week" | "month";
   }>({});
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [taskStats, setTaskStats] = useState(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
