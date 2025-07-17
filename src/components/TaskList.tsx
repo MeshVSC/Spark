@@ -3,6 +3,7 @@ import { getTasks, toggleTask, deleteTask, subscribeToTasks } from "../lib/queri
 import { getProjects, subscribeToProjects } from "../lib/queries/projects";
 import { TaskItem } from "./TaskItem";
 import type { Database } from "../lib/supabase";
+import ProgressCircle from "./ui/ProgressCircle";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -170,44 +171,6 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, ta
     });
   };
 
-  // Progress Circle Component - Simple filled circle
-  const ProgressCircle = ({ completion, size = 16 }: { completion: number, size?: number }) => {
-    const radius = size / 2 - 2;
-    const center = size / 2;
-    const strokeWidth = 2;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDasharray = circumference;
-    const strokeDashoffset = circumference - (completion / 100) * circumference;
-
-    return (
-      <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-        <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
-          {/* Background circle */}
-          <circle
-            cx={center}
-            cy={center}
-            r={radius}
-            fill="none"
-            stroke="#E5E7EB"
-            strokeWidth={strokeWidth}
-          />
-          
-          {/* Progress stroke */}
-          <circle
-            cx={center}
-            cy={center}
-            r={radius}
-            fill="none"
-            stroke="#007AFF"
-            strokeWidth={strokeWidth}
-            strokeDasharray={strokeDasharray}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-    );
-  };
 
   const ProjectHeader = ({ project }: { project: ProjectWithTasks }) => (
     <div className="mb-6 group">
