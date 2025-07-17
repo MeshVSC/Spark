@@ -86,7 +86,6 @@ const mockTasks = [
 
 // Export the addMockupData function for use in other components
 export const addMockupData = async () => {
-  console.log('Starting to add mockup data...')
   
   // Get the current user
   const user = await getCurrentUser()
@@ -95,10 +94,8 @@ export const addMockupData = async () => {
     throw new Error('User not authenticated')
   }
   
-  console.log('User authenticated:', user.email || 'anonymous')
   
   // Add areas (folders)
-  console.log('Adding areas...')
   const areaMap = {}
   for (const area of mockAreas) {
     const { data, error } = await supabase
@@ -116,12 +113,10 @@ export const addMockupData = async () => {
       console.error('Error adding area:', area.name, error)
     } else {
       areaMap[area.name] = data.id
-      console.log('Added area:', area.name)
     }
   }
   
   // Add projects
-  console.log('Adding projects...')
   const projectMap = {}
   for (const project of mockProjects) {
     const { data, error } = await supabase
@@ -141,12 +136,10 @@ export const addMockupData = async () => {
       console.error('Error adding project:', project.name, error)
     } else {
       projectMap[project.name] = data.id
-      console.log('Added project:', project.name)
     }
   }
   
   // Add tasks
-  console.log('Adding tasks...')
   for (const task of mockTasks) {
     const taskData = {
       title: task.title,
@@ -168,12 +161,9 @@ export const addMockupData = async () => {
     if (error) {
       console.error('Error adding task:', task.title, error)
     } else {
-      console.log('Added task:', task.title)
     }
   }
   
-  console.log('✅ Mockup data added successfully!')
-  console.log(`Added ${mockAreas.length} areas, ${mockProjects.length} projects, and ${mockTasks.length} tasks`)
 }
 
 export function MockupDataButton() {

@@ -16,47 +16,10 @@ import { CalendarView } from "./CalendarView";
 import { TimeBlockingView } from "./TimeBlockingView";
 import { RecurringTaskForm } from "./RecurringTaskForm";
 import { TaskEditForm } from "./TaskEditForm"; // Import TaskEditForm
+import { useTaskNavigation } from "../hooks/useTaskNavigation";
 import { MockupDataButton } from "./MockupDataButton";
 import type { Database } from "../lib/supabase";
-
-// Progress Circle Component - Simple filled circle
-const ProgressCircle = ({ completion, size = 16 }: { completion: number, size?: number }) => {
-  const radius = size / 2 - 2;
-  const center = size / 2;
-  const strokeWidth = 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (completion / 100) * circumference;
-
-  return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
-        {/* Background circle */}
-        <circle
-          cx={center}
-          cy={center}
-          r={radius}
-          fill="none"
-          stroke="#E5E7EB"
-          strokeWidth={strokeWidth}
-        />
-        
-        {/* Progress stroke */}
-        <circle
-          cx={center}
-          cy={center}
-          r={radius}
-          fill="none"
-          stroke="#007AFF"
-          strokeWidth={strokeWidth}
-          strokeDasharray={strokeDasharray}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </svg>
-    </div>
-  );
-};
+import ProgressCircle from "./ui/ProgressCircle";
 
 // Icon mapping for areas - copied from Sidebar
 const getAreaIcon = (iconName?: string | null) => {
@@ -185,8 +148,7 @@ export function SparkApp() {
   const [showQuickEntry, setShowQuickEntry] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showRecurringForm, setShowRecurringForm] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [showTaskEditForm, setShowTaskEditForm] = useState(false); // Corrected single declaration
+  const { selectedTaskId, openTask, closeTask } = useTaskNavigation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [taskFilters, setTaskFilters] = useState<{
     priority?: "low" | "medium" | "high";
@@ -204,9 +166,7 @@ export function SparkApp() {
   // Function to manually refresh the task cache
   const refreshTaskCache = async () => {
     try {
-      console.log('📝 Manually refreshing task cache...');
       const updatedTasks = await getTasks({ view: 'all' });
-      console.log('📝 Manual cache refresh:', updatedTasks.length, 'tasks');
       setAllTasks(updatedTasks);
     } catch (error) {
       console.error('Error manually refreshing task cache:', error);
@@ -222,7 +182,6 @@ export function SparkApp() {
     // Fetch ALL tasks once and cache them
     getTasks({ view: 'all' })
       .then((fetchedTasks) => {
-        console.log('All tasks cached on startup:', fetchedTasks.length, 'tasks');
         setAllTasks(fetchedTasks);
       })
       .catch((error) => {
@@ -231,12 +190,9 @@ export function SparkApp() {
       });
 
     // Subscribe to task changes to keep cache updated
-    console.log('Setting up task subscription...');
     const taskSubscription = subscribeToTasks(async () => {
       try {
-        console.log('🔥 Task change detected, updating cache...');
         const updatedTasks = await getTasks({ view: 'all' });
-        console.log('🔥 Cache updated with:', updatedTasks.length, 'tasks');
         setAllTasks(updatedTasks);
       } catch (error) {
         console.error('Error updating task cache:', error);
@@ -251,7 +207,6 @@ export function SparkApp() {
   // Filter cached tasks instantly when view/project changes
   useEffect(() => {
     const filterTasks = () => {
-      console.log('Filtering tasks instantly for:', { currentView, selectedProjectId, selectedAreaId });
       
       let filteredTasks = allTasks;
       
@@ -288,8 +243,6 @@ export function SparkApp() {
         filteredTasks = filteredTasks.filter(task => !task.completed);
       }
       
-      console.log('Filtered tasks result:', filteredTasks);
-      console.log('Setting tasks to:', filteredTasks.length, 'tasks');
       setTasks(filteredTasks);
     };
     
@@ -326,7 +279,7 @@ export function SparkApp() {
         setShowQuickEntry(false);
         setShowSearch(false);
         setShowRecurringForm(false);
-        setShowTaskEditForm(false); // Close TaskEditForm on escape
+        closeTask(); // Close TaskEditForm on escape
       }
     };
 
@@ -389,13 +342,11 @@ export function SparkApp() {
   };
 
   const handleOpenTaskEditForm = (taskId: string) => {
-    setSelectedTaskId(taskId);
-    setShowTaskEditForm(true);
+    openTask(taskId);
   };
 
   const handleCloseTaskEditForm = () => {
-    setSelectedTaskId(null);
-    setShowTaskEditForm(false);
+    closeTask();
   };
 
   return (
@@ -411,7 +362,6 @@ export function SparkApp() {
         selectedProjectId={selectedProjectId}
         selectedAreaId={selectedAreaId}
         onProjectSelect={(projectId) => {
-          console.log('Project selected:', projectId);
           setSelectedProjectId(projectId);
           setSelectedAreaId(null);
           setCurrentView("inbox");
@@ -428,11 +378,9 @@ export function SparkApp() {
           setShowProjectForm(true);
         }}
         onNewProject={() => {
-          console.log("New folder/area clicked");
           setShowAreaForm(true);
         }}
         onNewArea={() => {
-          console.log("New area clicked");
           setShowAreaForm(true);
         }}
         onEditArea={(area) => {
@@ -737,7 +685,7 @@ export function SparkApp() {
         />
       )}
 
-      {showTaskEditForm && selectedTaskId && (
+      {selectedTaskId && (
         <TaskEditForm
           task={tasks.find(t => t.id === selectedTaskId)}
           onClose={handleCloseTaskEditForm}

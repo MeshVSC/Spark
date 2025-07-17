@@ -188,18 +188,13 @@ export function TaskForm({ onClose, projectId, areaId, task, onTaskCreated }: Ta
 
     try {
       if (task) {
-        console.log('🔄 Updating task...');
         await updateTask(task.id, taskData);
-        console.log('✅ Task updated successfully');
       } else {
-        console.log('🚀 Creating task...');
         await createTask(taskData);
-        console.log('✅ Task created successfully');
       }
       
       // Manually refresh task cache immediately
       if (onTaskCreated) {
-        console.log('🔄 Triggering cache refresh...');
         onTaskCreated();
       }
       

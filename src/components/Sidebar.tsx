@@ -5,46 +5,9 @@ import { getTaskStats, subscribeToTasks, getTasks } from "../lib/queries/tasks";
 import { SignOutButton } from "../SignOutButton";
 import { Settings } from "./Settings";
 import { useSettings } from "../contexts/SettingsContext";
+import { useTaskNavigation } from "../hooks/useTaskNavigation";
 import type { Database } from "../lib/supabase";
-
-// Progress circle component - Simple filled circle
-const ProgressCircle = ({ completion, size = 16 }: { completion: number, size?: number }) => {
-  const radius = size / 2 - 2;
-  const center = size / 2;
-  const strokeWidth = 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (completion / 100) * circumference;
-
-  return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
-        {/* Background circle */}
-        <circle
-          cx={center}
-          cy={center}
-          r={radius}
-          fill="none"
-          stroke="#E5E7EB"
-          strokeWidth={strokeWidth}
-        />
-        
-        {/* Progress stroke */}
-        <circle
-          cx={center}
-          cy={center}
-          r={radius}
-          fill="none"
-          stroke="#007AFF"
-          strokeWidth={strokeWidth}
-          strokeDasharray={strokeDasharray}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </svg>
-    </div>
-  );
-};
+import ProgressCircle from "./ui/ProgressCircle";
 
 // Icon mapping for areas - returns JSX elements instead of emoji
 const getAreaIcon = (iconName?: string | null) => {
@@ -178,6 +141,7 @@ export function Sidebar({
   const [projectCompletionStats, setProjectCompletionStats] = useState<Record<string, { completed: number; total: number }>>({});
   const [showSettings, setShowSettings] = useState(false);
   const { settings } = useSettings();
+  const { openTask } = useTaskNavigation();
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -224,8 +188,6 @@ export function Sidebar({
         setProjectCompletionStats(completionStats);
         
         // Debug logging
-        console.log('🎯 Initial project completion stats:', completionStats);
-        console.log('📊 Initial project task counts:', counts);
       } catch (error) {
         console.error("Failed to fetch initial sidebar data:", error);
       }
@@ -235,9 +197,7 @@ export function Sidebar({
 
     const projectSubscription = subscribeToProjects(async () => {
       try {
-        console.log('🔄 Project subscription triggered, fetching updated projects...');
         const updatedProjects = await getProjects();
-        console.log('✅ Projects updated:', updatedProjects.length);
         setProjects(updatedProjects);
       } catch (error) {
         console.error("Failed to fetch updated projects:", error);
@@ -246,9 +206,7 @@ export function Sidebar({
     
     const areaSubscription = subscribeToAreas(async () => {
       try {
-        console.log('🔄 Area subscription triggered, fetching updated areas...');
         const updatedAreas = await getAreas();
-        console.log('✅ Areas updated:', updatedAreas.length);
         setAreas(updatedAreas);
       } catch (error) {
         console.error("Failed to fetch updated areas:", error);
@@ -295,8 +253,6 @@ export function Sidebar({
         setProjectCompletionStats(completionStats);
         
         // Debug logging
-        console.log('🔄 Updated project completion stats:', completionStats);
-        console.log('📊 Updated project task counts:', counts);
       } catch (error) {
         console.error("Failed to fetch updated task stats:", error);
       }
@@ -645,7 +601,6 @@ export function Sidebar({
                   const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
                   
                   // Debug logging
-                  console.log(`🎯 Project ${project.name}:`, {
                     id: project.id,
                     completionData,
                     taskCount,
@@ -717,7 +672,11 @@ export function Sidebar({
                       {hasItems && settings.showProjectDropdowns && !isCollapsed && (
                         <div className="ml-5 border-l border-gray-200 pl-2 space-y-0">
                           {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
-                            <div key={task.id} className="flex items-center gap-2 py-0.5 text-xs text-gray-600">
+                            <div
+                              key={task.id}
+                              className="flex items-center gap-2 py-0.5 text-xs text-gray-600 cursor-pointer"
+                              onClick={() => openTask(task.id)}
+                            >
                               <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
                               <span className={`truncate leading-none ${task.completed ? 'line-through' : ''}`}>
                                 {task.title}
@@ -814,6 +773,7 @@ export function Sidebar({
                         key={task.id}
                         className="text-xs text-gray-600 py-0.5 px-2 hover:bg-gray-100 rounded cursor-pointer"
                         title={task.title}
+                        onClick={() => openTask(task.id)}
                       >
                         <div className="flex items-center gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
