@@ -16,6 +16,7 @@ import { CalendarView } from "./CalendarView";
 import { TimeBlockingView } from "./TimeBlockingView";
 import { RecurringTaskForm } from "./RecurringTaskForm";
 import { TaskEditForm } from "./TaskEditForm"; // Import TaskEditForm
+import { useTaskNavigation } from "../hooks/useTaskNavigation";
 import { MockupDataButton } from "./MockupDataButton";
 import type { Database } from "../lib/supabase";
 import ProgressCircle from "./ui/ProgressCircle";
@@ -147,8 +148,7 @@ export function SparkApp() {
   const [showQuickEntry, setShowQuickEntry] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showRecurringForm, setShowRecurringForm] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [showTaskEditForm, setShowTaskEditForm] = useState(false); // Corrected single declaration
+  const { selectedTaskId, openTask, closeTask } = useTaskNavigation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [taskFilters, setTaskFilters] = useState<{
     priority?: "low" | "medium" | "high";
@@ -279,7 +279,7 @@ export function SparkApp() {
         setShowQuickEntry(false);
         setShowSearch(false);
         setShowRecurringForm(false);
-        setShowTaskEditForm(false); // Close TaskEditForm on escape
+        closeTask(); // Close TaskEditForm on escape
       }
     };
 
@@ -342,13 +342,11 @@ export function SparkApp() {
   };
 
   const handleOpenTaskEditForm = (taskId: string) => {
-    setSelectedTaskId(taskId);
-    setShowTaskEditForm(true);
+    openTask(taskId);
   };
 
   const handleCloseTaskEditForm = () => {
-    setSelectedTaskId(null);
-    setShowTaskEditForm(false);
+    closeTask();
   };
 
   return (
@@ -687,7 +685,7 @@ export function SparkApp() {
         />
       )}
 
-      {showTaskEditForm && selectedTaskId && (
+      {selectedTaskId && (
         <TaskEditForm
           task={tasks.find(t => t.id === selectedTaskId)}
           onClose={handleCloseTaskEditForm}
