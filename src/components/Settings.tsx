@@ -440,6 +440,8 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Quick Entry</span>
                   <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>Ctrl</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
                     <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>N</kbd>
@@ -449,6 +451,8 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Search</span>
                   <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>Ctrl</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
                     <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>F</kbd>
@@ -458,6 +462,8 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Settings</span>
                   <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>Ctrl</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
                     <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>,</kbd>
@@ -467,6 +473,8 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Today View</span>
                   <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>Ctrl</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
                     <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>1</kbd>
@@ -476,6 +484,8 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Inbox View</span>
                   <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>Ctrl</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
                     <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>2</kbd>
@@ -485,6 +495,8 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Upcoming View</span>
                   <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>Ctrl</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
                     <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>3</kbd>
@@ -494,6 +506,8 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Completed View</span>
                   <div className="flex items-center gap-1">
+                    <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>Ctrl</kbd>
+                    <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>⌘</kbd>
                     <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>4</kbd>

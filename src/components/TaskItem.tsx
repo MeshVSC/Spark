@@ -98,13 +98,38 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 {/* Title with prefixes */}
-                <button
-                  onClick={() => onEditTask(task.id)}
-                  className={`text-left font-medium text-gray-900 hover:text-blue-600 transition-colors ${task.completed ? "line-through text-gray-500" : ""}`}
-                >
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {/* Task title - comes first */}
-                    <span className="task-title">{task.title}</span>
+                <div className="flex items-center gap-2">
+                  {/* Subtask dropdown arrow and counter - comes first */}
+                  {totalSubtasks > 0 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSubtasks(!showSubtasks);
+                      }}
+                      className="flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      <svg 
+                        width="12" 
+                        height="12" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2"
+                        className={`transform transition-transform ${showSubtasks ? 'rotate-90' : ''}`}
+                      >
+                        <polyline points="9,18 15,12 9,6"></polyline>
+                      </svg>
+                      <span className="text-xs">{completedSubtasks} of {totalSubtasks}</span>
+                    </button>
+                  )}
+                  
+                  {/* Task title */}
+                  <button
+                    onClick={() => onEditTask(task.id)}
+                    className={`text-left font-medium text-gray-900 hover:text-blue-600 transition-colors ${task.completed ? "line-through text-gray-500" : ""}`}
+                  >
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="task-title">{task.title}</span>
                     
                     {/* Document/sheet icon - comes after title */}
                     {task.notes && (
@@ -140,8 +165,9 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                         {formatDate(task.scheduled_date)}
                       </span>
                     )}
-                  </div>
-                </button>
+                    </div>
+                  </button>
+                </div>
 
                 {/* Notes */}
                 {task.notes && (
@@ -150,20 +176,6 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                   </p>
                 )}
 
-                {/* Subtask progress */}
-                {totalSubtasks > 0 && (
-                  <button
-                    onClick={() => setShowSubtasks(!showSubtasks)}
-                    className="task-metadata text-blue-600 hover:text-blue-700 mt-1 flex items-center gap-1"
-                  >
-                    <span>{completedSubtasks}/{totalSubtasks} subtasks</span>
-                    <span className={`transform transition-transform ${showSubtasks ? 'rotate-90' : ''}`}>
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="9,18 15,12 9,6"></polyline>
-                      </svg>
-                    </span>
-                  </button>
-                )}
 
               </div>
 
