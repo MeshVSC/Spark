@@ -19,6 +19,45 @@ import { TaskEditForm } from "./TaskEditForm"; // Import TaskEditForm
 import { MockupDataButton } from "./MockupDataButton";
 import type { Database } from "../lib/supabase";
 
+// Progress Circle Component - Simple filled circle
+const ProgressCircle = ({ completion, size = 16 }: { completion: number, size?: number }) => {
+  const radius = size / 2 - 2;
+  const center = size / 2;
+  const strokeWidth = 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (completion / 100) * circumference;
+
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
+        {/* Background circle */}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="#E5E7EB"
+          strokeWidth={strokeWidth}
+        />
+        
+        {/* Progress stroke */}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="#007AFF"
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+        />
+      </svg>
+    </div>
+  );
+};
+
 // Icon mapping for areas - copied from Sidebar
 const getAreaIcon = (iconName?: string | null) => {
   const iconStyle = "w-6 h-6 text-gray-500";
@@ -220,7 +259,12 @@ export function SparkApp() {
       if (selectedProjectId) {
         filteredTasks = allTasks.filter(task => task.project_id === selectedProjectId);
       } else if (selectedAreaId) {
-        filteredTasks = allTasks.filter(task => task.area_id === selectedAreaId);
+        // Show tasks that belong to projects within this area OR tasks directly assigned to this area
+        const areaProjectIds = projects.filter(p => p.area_id === selectedAreaId).map(p => p.id);
+        filteredTasks = allTasks.filter(task => 
+          task.area_id === selectedAreaId || 
+          (task.project_id && areaProjectIds.includes(task.project_id))
+        );
       }
       
       // Then apply view filters
@@ -403,14 +447,28 @@ export function SparkApp() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-white">
+      <div className="flex-1 flex flex-col bg-white md:ml-0 ml-0">
         {/* Header */}
         <div className="p-6 pb-2">
-          <div>
-            <h1 className="project-title">{getViewTitle()}</h1>
-            {getViewSubtitle() && (
-              <p className="project-description mt-1">{getViewSubtitle()}</p>
+          <div className="flex items-center gap-3">
+            {/* Progress circle for selected project */}
+            {selectedProjectId && (
+              <ProgressCircle 
+                completion={(() => {
+                  const projectTasks = allTasks.filter(t => t.project_id === selectedProjectId);
+                  const completedTasks = projectTasks.filter(t => t.completed).length;
+                  const totalTasks = projectTasks.length;
+                  return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                })()}
+                size={24}
+              />
             )}
+            <div>
+              <h1 className="project-title">{getViewTitle()}</h1>
+              {getViewSubtitle() && (
+                <p className="project-description mt-1">{getViewSubtitle()}</p>
+              )}
+            </div>
           </div>
           
           {/* Calendar View Toggle */}
@@ -456,18 +514,34 @@ export function SparkApp() {
                   {areas.map((area) => (
                     <div
                       key={area.id}
-                      onClick={() => handleAreaSelect(area.id)}
+                      onClick={async () => {
+                        setSelectedAreaId(area.id);
+                        setSelectedProjectId(null);
+                        setCurrentView("inbox");
+                        await refreshTaskCache();
+                      }}
                       className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
+                          <ProgressCircle 
+                            completion={(() => {
+                              const areaProjects = projects.filter(p => p.area_id === area.id);
+                              const areaTasks = allTasks.filter(t => t.area_id === area.id);
+                              const completedTasks = areaTasks.filter(t => t.completed).length;
+                              const totalTasks = areaTasks.length;
+                              return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                            })()}
+                            size={20}
+                          />
                           {getAreaIcon(area.color)}
                           <h3 className="text-lg font-semibold text-gray-900">{area.name}</h3>
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onEditArea(area);
+                            setEditingAreaId(area.id);
+                            setShowAreaForm(true);
                           }}
                           className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-100 transition-all duration-150"
                         >
@@ -490,11 +564,24 @@ export function SparkApp() {
                   {projects.map((project) => (
                     <div
                       key={project.id}
-                      onClick={() => handleProjectSelect(project.id)}
+                      onClick={() => {
+                        setSelectedProjectId(project.id);
+                        setSelectedAreaId(null);
+                        setCurrentView("inbox");
+                      }}
                       className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
+                          <ProgressCircle 
+                            completion={(() => {
+                              const projectTasks = allTasks.filter(t => t.project_id === project.id);
+                              const completedTasks = projectTasks.filter(t => t.completed).length;
+                              const totalTasks = projectTasks.length;
+                              return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                            })()}
+                            size={20}
+                          />
                           {(() => {
                             const area = areas.find(a => a.id === project.area_id);
                             return getAreaIcon(area?.color);

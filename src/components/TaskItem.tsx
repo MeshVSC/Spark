@@ -97,9 +97,17 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                {/* Title with prefixes */}
-                <div className="flex items-center gap-2">
-                  {/* Subtask dropdown arrow and counter - comes first */}
+                {/* Title with metadata */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Task title */}
+                  <button
+                    onClick={() => onEditTask(task.id)}
+                    className={`text-left font-medium text-gray-900 hover:text-blue-600 transition-colors ${task.completed ? "line-through text-gray-500" : ""}`}
+                  >
+                    <span className="task-title">{task.title}</span>
+                  </button>
+                  
+                  {/* Subtask dropdown arrow and counter - comes after title */}
                   {totalSubtasks > 0 && (
                     <button
                       onClick={(e) => {
@@ -123,50 +131,40 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                     </button>
                   )}
                   
-                  {/* Task title */}
-                  <button
-                    onClick={() => onEditTask(task.id)}
-                    className={`text-left font-medium text-gray-900 hover:text-blue-600 transition-colors ${task.completed ? "line-through text-gray-500" : ""}`}
-                  >
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="task-title">{task.title}</span>
-                    
-                    {/* Document/sheet icon - comes after title */}
-                    {task.notes && (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14,2 14,8 20,8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10,9 9,9 8,9"></polyline>
-                      </svg>
-                    )}
-                    
-                    {/* Tags - come after title */}
-                    {task.tags && task.tags.length > 0 && (
-                      <div className="flex gap-1">
-                        {task.tags.slice(0, 2).map((tag, index) => (
-                          <span key={index} className="task-metadata things-tag">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Dates - come after title */}
-                    {task.due_date && (
-                      <span className="task-metadata things-date-badge things-date-due">
-                        Due {formatDate(task.due_date)}
-                      </span>
-                    )}
-                    
-                    {task.scheduled_date && (
-                      <span className="task-metadata things-date-badge things-date-scheduled">
-                        {formatDate(task.scheduled_date)}
-                      </span>
-                    )}
+                  {/* Document/sheet icon - comes after title */}
+                  {task.notes && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14,2 14,8 20,8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10,9 9,9 8,9"></polyline>
+                    </svg>
+                  )}
+                  
+                  {/* Tags - come after title */}
+                  {task.tags && task.tags.length > 0 && (
+                    <div className="flex gap-1">
+                      {task.tags.slice(0, 2).map((tag, index) => (
+                        <span key={index} className="task-metadata things-tag">
+                          {tag}
+                        </span>
+                      ))}
                     </div>
-                  </button>
+                  )}
+                  
+                  {/* Dates - come after title */}
+                  {task.due_date && (
+                    <span className="task-metadata things-date-badge things-date-due">
+                      Due {formatDate(task.due_date)}
+                    </span>
+                  )}
+                  
+                  {task.scheduled_date && (
+                    <span className="task-metadata things-date-badge things-date-scheduled">
+                      {formatDate(task.scheduled_date)}
+                    </span>
+                  )}
                 </div>
 
                 {/* Notes */}

@@ -7,42 +7,40 @@ import { Settings } from "./Settings";
 import { useSettings } from "../contexts/SettingsContext";
 import type { Database } from "../lib/supabase";
 
-// Progress circle component
+// Progress circle component - Simple filled circle
 const ProgressCircle = ({ completion, size = 16 }: { completion: number, size?: number }) => {
   const radius = size / 2 - 2;
-  const innerRadius = radius - 1.5;
-  const progressRadius = innerRadius - 1;
-  
+  const center = size / 2;
+  const strokeWidth = 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (completion / 100) * circumference;
+
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
       <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
-        {/* Outer rim - darker gray */}
-        <circle 
-          cx={size / 2} 
-          cy={size / 2} 
-          r={radius} 
-          fill="#CCCCCC" 
+        {/* Background circle */}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="#E5E7EB"
+          strokeWidth={strokeWidth}
         />
-        {/* Inner background - lighter gray */}
-        <circle 
-          cx={size / 2} 
-          cy={size / 2} 
-          r={innerRadius} 
-          fill="#EEEEEE" 
+        
+        {/* Progress stroke */}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="#007AFF"
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
         />
-        {/* Progress fill - lighter gray */}
-        {completion > 0 && (
-          <circle 
-            cx={size / 2} 
-            cy={size / 2} 
-            r={progressRadius} 
-            fill="none"
-            stroke="#CCCCCC"
-            strokeWidth="2"
-            strokeDasharray={`${Math.round(completion)} 100`}
-            pathLength="100"
-          />
-        )}
       </svg>
     </div>
   );
@@ -434,7 +432,7 @@ export function Sidebar({
   );
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} flex flex-col transition-all duration-300`} style={{ background: '#F5F5F5' }}>
+    <div className={`${collapsed ? 'w-16' : 'w-64'} flex flex-col transition-all duration-300 md:relative fixed inset-y-0 left-0 z-50 md:z-auto ${collapsed ? 'md:w-16' : 'w-full md:w-64'}`} style={{ background: '#F5F5F5' }}>
       {/* Collapse button */}
       <div className="flex items-center justify-between p-4">
         {!collapsed && <h2 className="text-lg font-semibold text-gray-900">Spark</h2>}
@@ -469,17 +467,12 @@ export function Sidebar({
                 }`}
                 title={collapsed ? view.name : undefined}
               >
-                {!collapsed && (
-                  <ProgressCircle 
-                    completion={view.id === 'completed' ? 100 : 0} 
-                  />
-                )}
                 {view.icon}
                 {!collapsed && (
                   <>
                     <span className="flex-1 text-left">{view.name}</span>
                     {settings.showViewCounts && view.count > 0 && (
-                      <span className="text-xs text-gray-500 font-medium">
+                      <span className="text-xs text-gray-400 font-medium">
                         {view.count}
                       </span>
                     )}
@@ -508,21 +501,12 @@ export function Sidebar({
                 }`}
                 title={collapsed ? view.name : undefined}
               >
-                {!collapsed && (
-                  <ProgressCircle 
-                    completion={
-                      view.id === 'today' ? (taskStats?.dueToday > 0 ? 50 : 0) : 
-                      view.id === 'upcoming' ? 25 : 
-                      view.id === 'someday' ? 75 : 0
-                    } 
-                  />
-                )}
                 {view.icon}
                 {!collapsed && (
                   <>
                     <span className="flex-1 text-left">{view.name}</span>
                     {settings.showViewCounts && view.count > 0 && (
-                      <span className="text-xs text-gray-500 font-medium">
+                      <span className="text-xs text-gray-400 font-medium">
                         {view.count}
                       </span>
                     )}
@@ -702,7 +686,7 @@ export function Sidebar({
                             </button>
                           </div>
                           {settings.showProjectCounts && taskCount > 0 && (
-                            <span className="text-xs text-gray-500 font-medium">
+                            <span className="text-xs text-gray-400 font-medium">
                               {taskCount}
                             </span>
                           )}
@@ -795,7 +779,7 @@ export function Sidebar({
                       </button>
                     </div>
                     {settings.showProjectCounts && taskCount > 0 && (
-                      <span className="text-xs text-gray-500 font-medium">
+                      <span className="text-xs text-gray-400 font-medium">
                         {taskCount}
                       </span>
                     )}
