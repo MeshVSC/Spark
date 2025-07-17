@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { User } from "@supabase/supabase-js";
 import { getProjects, subscribeToProjects } from "../lib/queries/projects";
 import { getAreas, subscribeToAreas } from "../lib/queries/areas";
 import { getTaskStats, subscribeToTasks, getTasks } from "../lib/queries/tasks";
@@ -108,7 +109,7 @@ interface SidebarProps {
   onEditArea: (area: Area) => void;
   onNewTask: () => void;
   onQuickEntry: () => void;
-  user: any;
+  user: User | null;
   collapsed: boolean;
   onToggleCollapse: () => void;
 }
