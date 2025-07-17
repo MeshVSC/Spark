@@ -5,6 +5,7 @@ import { SparkApp } from "./components/SparkApp";
 import { onAuthStateChange } from "./lib/auth";
 import { testSupabaseConnection } from "./lib/supabase";
 import { SettingsProvider } from "./contexts/SettingsContext";
+import { TaskNavigationProvider } from "./hooks/useTaskNavigation";
 import type { User } from '@supabase/supabase-js';
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
 
   return (
     <SettingsProvider>
+      <TaskNavigationProvider>
       <div className="min-h-screen flex flex-col" style={{ background: '#FAFAFA' }}>
         {user ? (
           <SparkApp />
@@ -62,6 +64,7 @@ export default function App() {
         )}
         <Toaster />
       </div>
+      </TaskNavigationProvider>
     </SettingsProvider>
   );
 }

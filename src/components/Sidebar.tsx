@@ -5,6 +5,7 @@ import { getTaskStats, subscribeToTasks, getTasks } from "../lib/queries/tasks";
 import { SignOutButton } from "../SignOutButton";
 import { Settings } from "./Settings";
 import { useSettings } from "../contexts/SettingsContext";
+import { useTaskNavigation } from "../hooks/useTaskNavigation";
 import type { Database } from "../lib/supabase";
 import ProgressCircle from "./ui/ProgressCircle";
 
@@ -140,6 +141,7 @@ export function Sidebar({
   const [projectCompletionStats, setProjectCompletionStats] = useState<Record<string, { completed: number; total: number }>>({});
   const [showSettings, setShowSettings] = useState(false);
   const { settings } = useSettings();
+  const { openTask } = useTaskNavigation();
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -679,7 +681,11 @@ export function Sidebar({
                       {hasItems && settings.showProjectDropdowns && !isCollapsed && (
                         <div className="ml-5 border-l border-gray-200 pl-2 space-y-0">
                           {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
-                            <div key={task.id} className="flex items-center gap-2 py-0.5 text-xs text-gray-600">
+                            <div
+                              key={task.id}
+                              className="flex items-center gap-2 py-0.5 text-xs text-gray-600 cursor-pointer"
+                              onClick={() => openTask(task.id)}
+                            >
                               <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
                               <span className={`truncate leading-none ${task.completed ? 'line-through' : ''}`}>
                                 {task.title}
@@ -776,6 +782,7 @@ export function Sidebar({
                         key={task.id}
                         className="text-xs text-gray-600 py-0.5 px-2 hover:bg-gray-100 rounded cursor-pointer"
                         title={task.title}
+                        onClick={() => openTask(task.id)}
                       >
                         <div className="flex items-center gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
