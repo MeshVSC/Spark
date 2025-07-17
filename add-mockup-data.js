@@ -1,8 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
+import 'dotenv/config'
 
-// Supabase credentials
-const supabaseUrl = 'https://ipznnbmkdstkgdoivfyv.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwem5uYm1rZHN0a2dkb2l2Znl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNzYyMTMsImV4cCI6MjA2Nzg1MjIxM30.I5PzmzsL3Li_Gq-Bww9KtQh4_KxQePmb6lxdj2L7TZI'
+// Supabase credentials from environment variables
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 

@@ -94,6 +94,8 @@ npm run dev
 Required environment variables:
 - `VITE_SUPABASE_URL`: Your Supabase project URL
 - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `SUPABASE_URL`: Used by `add-mockup-data.js` (usually same as `VITE_SUPABASE_URL`)
+- `SUPABASE_ANON_KEY`: Used by `add-mockup-data.js` (usually same as `VITE_SUPABASE_ANON_KEY`)
 
 These are configured in:
 - **Local development**: `.env.local` file
