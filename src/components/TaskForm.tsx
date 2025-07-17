@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createTask, updateTask } from "../lib/queries/tasks";
 import { getProjects } from "../lib/queries/projects";
 import { getAreas } from "../lib/queries/areas";
+import { useTaskStore } from "../stores/useTaskStore";
 import type { Database } from "../lib/supabase";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
@@ -13,7 +14,6 @@ interface TaskFormProps {
   projectId?: string | null;
   areaId?: string | null;
   task?: Task;
-  onTaskCreated?: () => void;
 }
 
 // Locally-scoped styles for the test
@@ -31,7 +31,7 @@ const styles = `
   }
 `;
 
-export function TaskForm({ onClose, projectId, areaId, task, onTaskCreated }: TaskFormProps) {
+export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
   const [title, setTitle] = useState(task?.title || "");
   const [notes, setNotes] = useState(task?.notes || "");
   const [dueDate, setDueDate] = useState(
@@ -49,6 +49,7 @@ export function TaskForm({ onClose, projectId, areaId, task, onTaskCreated }: Ta
   const [projects, setProjects] = useState<Project[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const modalRef = useRef<HTMLDivElement>(null);
+  const { refresh } = useTaskStore();
   
   // Calendar popup states
   const [showScheduledDatePicker, setShowScheduledDatePicker] = useState(false);
@@ -193,10 +194,9 @@ export function TaskForm({ onClose, projectId, areaId, task, onTaskCreated }: Ta
         await createTask(taskData);
       }
       
-      // Manually refresh task cache immediately
-      if (onTaskCreated) {
-        onTaskCreated();
-      }
+
+      await refresh();
+
       
       onClose();
     } catch (error) {

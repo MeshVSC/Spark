@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { getTasks, toggleTask, deleteTask, subscribeToTasks } from "../lib/queries/tasks";
+import { useState, useEffect, useMemo } from "react";
+import { toggleTask, deleteTask } from "../lib/queries/tasks";
 import { getProjects, subscribeToProjects } from "../lib/queries/projects";
 import { TaskItem } from "./TaskItem";
 import type { Database } from "../lib/supabase";
 import ProgressCircle from "./ui/ProgressCircle";
+import { useTaskStore } from "../stores/useTaskStore";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -18,7 +19,6 @@ interface TaskListProps {
     dateRange?: "today" | "week" | "month";
   };
   onEditTask: (taskId: string) => void;
-  tasks: Task[];
 }
 
 interface ProjectWithTasks extends Project {
@@ -27,9 +27,44 @@ interface ProjectWithTasks extends Project {
   totalCount: number;
 }
 
-export function TaskList({ view, projectId, areaId, filters = {}, onEditTask, tasks }: TaskListProps) {
+export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: TaskListProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsWithTasks, setProjectsWithTasks] = useState<ProjectWithTasks[]>([]);
+  const { tasks: allTasks } = useTaskStore();
+
+  const tasks = useMemo(() => {
+    let list = allTasks;
+
+    if (projectId) {
+      list = list.filter(t => t.project_id === projectId);
+    } else if (areaId) {
+      const areaProjectIds = projects.filter(p => p.area_id === areaId).map(p => p.id);
+      list = list.filter(t =>
+        t.area_id === areaId ||
+        (t.project_id && areaProjectIds.includes(t.project_id))
+      );
+    }
+
+    if (view === 'inbox' && !projectId && !areaId) {
+      list = allTasks;
+    } else if (view === 'today') {
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      const todayEnd = today.getTime();
+      list = list.filter(task =>
+        !task.completed && (
+          (task.scheduled_date && new Date(task.scheduled_date).getTime() <= todayEnd) ||
+          (task.due_date && new Date(task.due_date).getTime() <= todayEnd)
+        )
+      );
+    } else if (view === 'completed') {
+      list = list.filter(task => task.completed);
+    } else {
+      list = list.filter(task => !task.completed);
+    }
+
+    return list;
+  }, [allTasks, view, projectId, areaId, projects]);
 
   useEffect(() => {
     const fetchProjects = async () => {
