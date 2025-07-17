@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { getCurrentUser, signOut } from "../lib/auth";
-import { getTaskStats, getTasks, subscribeToTasks } from "../lib/queries/tasks";
+import { getTaskStats } from "../lib/queries/tasks";
 import { getProjects } from "../lib/queries/projects";
 import { getAreas } from "../lib/queries/areas";
+import { useTaskStore } from "../stores/useTaskStore";
 import { SignOutButton } from "../SignOutButton";
 import { Sidebar } from "./Sidebar";
 import { TaskList } from "./TaskList";
@@ -160,105 +161,16 @@ export function SparkApp() {
   const [taskStats, setTaskStats] = useState(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]); // Add tasks state to SparkApp
-  const [allTasks, setAllTasks] = useState<Task[]>([]); // Cache all tasks for instant filtering
+  const { tasks: allTasks, refresh: refreshTaskCache } = useTaskStore();
 
-  // Function to manually refresh the task cache
-  const refreshTaskCache = async () => {
-    try {
-      console.log('📝 Manually refreshing task cache...');
-      const updatedTasks = await getTasks({ view: 'all' });
-      console.log('📝 Manual cache refresh:', updatedTasks.length, 'tasks');
-      setAllTasks(updatedTasks);
-    } catch (error) {
-      console.error('Error manually refreshing task cache:', error);
-    }
-  };
 
   useEffect(() => {
     getCurrentUser().then(setUser);
     getTaskStats().then(setTaskStats).catch(() => setTaskStats(null));
     getProjects().then(setProjects).catch(() => setProjects([]));
     getAreas().then(setAreas).catch(() => setAreas([]));
-    
-    // Fetch ALL tasks once and cache them
-    getTasks({ view: 'all' })
-      .then((fetchedTasks) => {
-        console.log('All tasks cached on startup:', fetchedTasks.length, 'tasks');
-        setAllTasks(fetchedTasks);
-      })
-      .catch((error) => {
-        console.error('Error fetching all tasks:', error);
-        setAllTasks([]);
-      });
+  }, []);
 
-    // Subscribe to task changes to keep cache updated
-    console.log('Setting up task subscription...');
-    const taskSubscription = subscribeToTasks(async () => {
-      try {
-        console.log('🔥 Task change detected, updating cache...');
-        const updatedTasks = await getTasks({ view: 'all' });
-        console.log('🔥 Cache updated with:', updatedTasks.length, 'tasks');
-        setAllTasks(updatedTasks);
-      } catch (error) {
-        console.error('Error updating task cache:', error);
-      }
-    });
-
-    return () => {
-      taskSubscription.unsubscribe();
-    };
-  }, []); // Only run once on component mount
-
-  // Filter cached tasks instantly when view/project changes
-  useEffect(() => {
-    const filterTasks = () => {
-      console.log('Filtering tasks instantly for:', { currentView, selectedProjectId, selectedAreaId });
-      
-      let filteredTasks = allTasks;
-      
-      // Filter by project/area first
-      if (selectedProjectId) {
-        filteredTasks = allTasks.filter(task => task.project_id === selectedProjectId);
-      } else if (selectedAreaId) {
-        // Show tasks that belong to projects within this area OR tasks directly assigned to this area
-        const areaProjectIds = projects.filter(p => p.area_id === selectedAreaId).map(p => p.id);
-        filteredTasks = allTasks.filter(task => 
-          task.area_id === selectedAreaId || 
-          (task.project_id && areaProjectIds.includes(task.project_id))
-        );
-      }
-      
-      // Then apply view filters
-      if (currentView === 'inbox' && !selectedProjectId && !selectedAreaId) {
-        // For inbox view without specific project, show all tasks for grouping
-        filteredTasks = allTasks;
-      } else if (currentView === 'today') {
-        const today = new Date();
-        today.setHours(23, 59, 59, 999);
-        const todayEnd = today.getTime();
-        filteredTasks = filteredTasks.filter(task => 
-          !task.completed && (
-            (task.scheduled_date && new Date(task.scheduled_date).getTime() <= todayEnd) ||
-            (task.due_date && new Date(task.due_date).getTime() <= todayEnd)
-          )
-        );
-      } else if (currentView === 'completed') {
-        filteredTasks = filteredTasks.filter(task => task.completed);
-      } else {
-        // For other views or project-specific views, show non-completed tasks
-        filteredTasks = filteredTasks.filter(task => !task.completed);
-      }
-      
-      console.log('Filtered tasks result:', filteredTasks);
-      console.log('Setting tasks to:', filteredTasks.length, 'tasks');
-      setTasks(filteredTasks);
-    };
-    
-    if (allTasks.length > 0) {
-      filterTasks();
-    }
-  }, [currentView, selectedProjectId, selectedAreaId, allTasks]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -583,7 +495,6 @@ export function SparkApp() {
                   areaId={selectedAreaId}
                   filters={taskFilters}
                   onEditTask={handleOpenTaskEditForm}
-                  tasks={tasks}
                 />
               </>
             )}
@@ -666,7 +577,6 @@ export function SparkApp() {
           onClose={() => setShowTaskForm(false)}
           projectId={selectedProjectId}
           areaId={selectedAreaId}
-          onTaskCreated={refreshTaskCache}
         />
       )}
 
@@ -701,9 +611,8 @@ export function SparkApp() {
 
       {showTaskEditForm && selectedTaskId && (
         <TaskEditForm
-          task={tasks.find(t => t.id === selectedTaskId)}
+          task={allTasks.find(t => t.id === selectedTaskId)!}
           onClose={handleCloseTaskEditForm}
-          onTaskUpdated={refreshTaskCache}
         />
       )}
 
@@ -719,7 +628,6 @@ export function SparkApp() {
         onClose={() => setShowQuickEntry(false)}
         projectId={null}
         areaId={null}
-        onTaskCreated={refreshTaskCache}
       />
 
     </div>

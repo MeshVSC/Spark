@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { updateTask } from "../lib/queries/tasks";
 import { getProjects } from "../lib/queries/projects";
 import { getAreas } from "../lib/queries/areas";
+import { useTaskStore } from "../stores/useTaskStore";
 import type { Database } from "../lib/supabase";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
@@ -11,10 +12,9 @@ type Area = Database['public']['Tables']['areas']['Row'];
 interface TaskEditFormProps {
   task: Task;
   onClose: () => void;
-  onTaskUpdated?: () => void;
 }
 
-export function TaskEditForm({ task, onClose, onTaskUpdated }: TaskEditFormProps) {
+export function TaskEditForm({ task, onClose }: TaskEditFormProps) {
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes || "");
   const [dueDate, setDueDate] = useState(
@@ -39,6 +39,7 @@ export function TaskEditForm({ task, onClose, onTaskUpdated }: TaskEditFormProps
   const [currentScheduledDate, setCurrentScheduledDate] = useState(new Date());
   const [currentDueDate, setCurrentDueDate] = useState(new Date());
   const modalRef = useRef<HTMLDivElement>(null);
+  const { refresh } = useTaskStore();
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -172,11 +173,7 @@ export function TaskEditForm({ task, onClose, onTaskUpdated }: TaskEditFormProps
       });
       console.log('✅ Task updated successfully');
       
-      // Manually refresh task cache immediately
-      if (onTaskUpdated) {
-        console.log('🔄 Triggering cache refresh...');
-        onTaskUpdated();
-      }
+      await refresh();
       
       onClose();
     } catch (error) {

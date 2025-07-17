@@ -1,21 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { createTask } from "../lib/queries/tasks";
 
+import { useTaskStore } from "../stores/useTaskStore";
+
 interface QuickEntryProps {
   isVisible: boolean;
   onClose: () => void;
   projectId?: string | null;
   areaId?: string | null;
-  onTaskCreated?: () => void;
 }
 
-export function QuickEntry({ isVisible, onClose, projectId, areaId, onTaskCreated }: QuickEntryProps) {
+export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntryProps) {
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const modalRef = useRef<HTMLDivElement>(null);
+  const { refresh } = useTaskStore();
 
   const generateCalendarDays = () => {
     const currentMonth = currentDate.getMonth();
@@ -123,11 +125,7 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId, onTaskCreate
       });
       console.log('✅ Task created successfully');
       
-      // Manually refresh task cache immediately
-      if (onTaskCreated) {
-        console.log('🔄 Triggering cache refresh...');
-        onTaskCreated();
-      }
+      await refresh();
       
       setTitle("");
       setDueDate("");

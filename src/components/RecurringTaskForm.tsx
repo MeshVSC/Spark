@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createRecurringTask, updateRecurringTask, updateTask } from "../lib/queries/tasks";
+import { useTaskStore } from "../stores/useTaskStore";
 import { supabase } from "../lib/supabase";
 import type { Database } from "../lib/supabase";
 
@@ -18,6 +19,7 @@ export function RecurringTaskForm({ isVisible, onClose, taskId }: RecurringTaskF
   const [endDate, setEndDate] = useState("");
   const [occurrences, setOccurrences] = useState<number | null>(null);
   const [recurringTask, setRecurringTask] = useState<RecurringTask | null>(null);
+  const { refresh } = useTaskStore();
 
   useEffect(() => {
     const fetchRecurringTask = async () => {
@@ -71,7 +73,7 @@ export function RecurringTaskForm({ isVisible, onClose, taskId }: RecurringTaskF
         await updateTask(taskId, { recurring_rule_id: newRecurringTask.id, is_recurring: true });
       }
     }
-
+    await refresh();
     onClose();
   };
 
