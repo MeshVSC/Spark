@@ -93,6 +93,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
   }, []);
 
   // Group tasks by project when not viewing a specific project
+  // Areas should still show project organization
   useEffect(() => {
     console.log('TaskList useEffect:', { projectId, areaId, projectsLength: projects.length, tasksLength: tasks.length });
     
@@ -265,8 +266,9 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     </div>
   );
 
-  // If viewing a specific project or area, show traditional task list
-  if (projectId || areaId) {
+  // If viewing a specific project, show traditional task list
+  // For areas, we want to show projects organized view, not flat task list
+  if (projectId) {
     const filteredTasks = applyFilters(tasks);
 
     return (
