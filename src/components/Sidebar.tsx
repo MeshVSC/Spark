@@ -602,6 +602,7 @@ export function Sidebar({
                   const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
                   
                   // Debug logging
+                  console.log({
                     id: project.id,
                     completionData,
                     taskCount,

@@ -7,6 +7,7 @@ import { testSupabaseConnection } from "./lib/supabase";
 import { SettingsProvider } from "./contexts/SettingsContext";
 
 import { TaskStoreProvider } from "./stores/useTaskStore";
+import { TaskNavigationProvider } from "./hooks/useTaskNavigation";
 
 import type { User } from '@supabase/supabase-js';
 
@@ -45,10 +46,11 @@ export default function App() {
   return (
     <SettingsProvider>
       <TaskStoreProvider>
-        <div className="min-h-screen flex flex-col" style={{ background: '#FAFAFA' }}>
-          {user ? (
-            <SparkApp />
-          ) : (
+        <TaskNavigationProvider>
+          <div className="min-h-screen flex flex-col" style={{ background: '#FAFAFA' }}>
+            {user ? (
+              <SparkApp />
+            ) : (
 
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="w-full max-w-md mx-auto">
@@ -64,11 +66,11 @@ export default function App() {
               </div>
             </div>
           </div>
-          )}
-          <Toaster />
-        </div>
+            )}
+            <Toaster />
+          </div>
+        </TaskNavigationProvider>
       </TaskStoreProvider>
-
     </SettingsProvider>
   );
 }
