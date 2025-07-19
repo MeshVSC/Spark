@@ -392,7 +392,7 @@ export function Sidebar({
     <div className={`${collapsed ? 'w-16' : 'w-64'} flex flex-col transition-all duration-300 md:relative fixed inset-y-0 left-0 z-50 md:z-auto ${collapsed ? 'md:w-16' : 'w-full md:w-64'}`} style={{ background: '#F5F5F5' }}>
       {/* Collapse button */}
       <div className="flex items-center justify-between p-4">
-        {!collapsed && <h2 className="text-lg font-semibold text-gray-900">Spark</h2>}
+        {!collapsed && <h2 className="text-2xl font-bold text-gray-900">Spark</h2>}
         <button 
           onClick={onToggleCollapse}
           className="p-1 rounded hover:bg-gray-200 transition-colors"

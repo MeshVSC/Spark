@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { CustomCheckbox } from "./CustomCheckbox";
 import { useSettings } from "../contexts/SettingsContext";
+import { DataImport } from "./DataImport";
 
 interface SettingsProps {
   isOpen: boolean;
@@ -8,7 +9,7 @@ interface SettingsProps {
 }
 
 export function Settings({ isOpen, onClose }: SettingsProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'quickentry' | 'reminders' | 'calendar' | 'shortcuts'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'quickentry' | 'reminders' | 'calendar' | 'shortcuts' | 'import'>('general');
   const modalRef = useRef<HTMLDivElement>(null);
   const { settings, updateSetting } = useSettings();
 
@@ -106,6 +107,17 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
           <path d="M1 15h6"></path>
           <path d="M17 9h6"></path>
           <path d="M17 15h6"></path>
+        </svg>
+      )
+    },
+    { 
+      id: 'import' as const, 
+      name: 'Import', 
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7,10 12,15 17,10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
         </svg>
       )
     },
@@ -514,6 +526,12 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'import' && (
+            <div className="space-y-6">
+              <DataImport />
             </div>
           )}
         </div>
