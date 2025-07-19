@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createArea, getAreas, updateArea } from "../lib/queries/areas";
+import { useTaskStore } from "../stores/useTaskStore";
+import { useAreaStore } from "../stores/useAreaStore";
 
 interface AreaFormProps {
   editingAreaId?: string | null;
@@ -118,6 +120,8 @@ const folderIcons = [
 ];
 
 export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
+  const { refresh: refreshTasks } = useTaskStore();
+  const { refresh: refreshAreas, addOptimistic: addOptimisticArea, removeOptimistic: removeOptimisticArea } = useAreaStore();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedIcon, setSelectedIcon] = useState(folderIcons[0]);
@@ -162,8 +166,11 @@ export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
     e.preventDefault();
     if (!name.trim()) return;
 
+    let optimisticId: string | null = null;
+    
     try {
       setLoading(true);
+      
       if (editingAreaId) {
         // Update existing area
         await updateArea(editingAreaId, {
@@ -172,16 +179,33 @@ export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
           color: selectedIcon.name,
         });
       } else {
-        // Create new area
+        // For new areas, add optimistically first
+        optimisticId = addOptimisticArea({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          color: selectedIcon.name,
+        });
+        
+        // Close the form immediately for better UX
+        onClose();
+        
+        // Then create the area in the background
         await createArea({
           name: name.trim(),
           description: description.trim() || undefined,
           color: selectedIcon.name,
         });
       }
-      onClose();
+      
+      // Refresh both stores to get real data from server
+      await Promise.all([refreshTasks(), refreshAreas()]);
     } catch (error) {
       console.error(editingAreaId ? "Failed to update area:" : "Failed to create area:", error);
+      
+      // If there was an error and we added optimistically, remove it
+      if (optimisticId) {
+        removeOptimisticArea(optimisticId);
+      }
     } finally {
       setLoading(false);
     }

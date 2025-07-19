@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getCurrentUser, signOut } from "../lib/auth";
 import { getTaskStats } from "../lib/queries/tasks";
-import { getProjects } from "../lib/queries/projects";
-import { getAreas } from "../lib/queries/areas";
 import { useTaskStore } from "../stores/useTaskStore";
+import { useProjectStore } from "../stores/useProjectStore";
+import { useAreaStore } from "../stores/useAreaStore";
 import { SignOutButton } from "../SignOutButton";
 import { Sidebar } from "./Sidebar";
 import { TaskList } from "./TaskList";
@@ -160,17 +160,15 @@ export function SparkApp() {
 
   const [user, setUser] = useState<User | null>(null);
   const [taskStats, setTaskStats] = useState(null);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [areas, setAreas] = useState<Area[]>([]);
   const { tasks: allTasks, refresh: refreshTaskCache } = useTaskStore();
+  const { projects } = useProjectStore();
+  const { areas } = useAreaStore();
 
 
 
   useEffect(() => {
     getCurrentUser().then(setUser);
     getTaskStats().then(setTaskStats).catch(() => setTaskStats(null));
-    getProjects().then(setProjects).catch(() => setProjects([]));
-    getAreas().then(setAreas).catch(() => setAreas([]));
   }, []);
 
 

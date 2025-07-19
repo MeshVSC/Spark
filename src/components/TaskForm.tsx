@@ -49,7 +49,7 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const modalRef = useRef<HTMLDivElement>(null);
-  const { refresh } = useTaskStore();
+  const { refresh, addOptimistic, removeOptimistic } = useTaskStore();
   
   // Calendar popup states
   const [showScheduledDatePicker, setShowScheduledDatePicker] = useState(false);
@@ -187,20 +187,34 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
       duration: duration ? parseInt(duration) : null,
     };
 
+    let optimisticId: string | null = null;
+    
     try {
       if (task) {
+        // For updates, we don't need optimistic updates since the task already exists
         await updateTask(task.id, taskData);
       } else {
+        // For new tasks, add optimistically first
+        optimisticId = addOptimistic(taskData);
+        
+        // Close the form immediately for better UX
+        onClose();
+        
+        // Then create the task in the background
         await createTask(taskData);
       }
       
-
+      // Refresh to get the real data from server
       await refresh();
-
-      
-      onClose();
     } catch (error) {
       console.error("Failed to save task:", error.message);
+      
+      // If there was an error and we added optimistically, remove it
+      if (optimisticId) {
+        removeOptimistic(optimisticId);
+      }
+      
+      // Show error feedback to user here if needed
     }
   };
 

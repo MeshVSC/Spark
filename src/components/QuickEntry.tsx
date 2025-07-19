@@ -17,7 +17,7 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
   const [currentDate, setCurrentDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const modalRef = useRef<HTMLDivElement>(null);
-  const { refresh } = useTaskStore();
+  const { refresh, addOptimistic, removeOptimistic } = useTaskStore();
 
   const generateCalendarDays = () => {
     const currentMonth = currentDate.getMonth();
@@ -115,25 +115,32 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
     e.preventDefault();
     if (!title.trim()) return;
 
+    const taskData = {
+      title: title.trim(),
+      project_id: projectId,
+      area_id: areaId,
+      due_date: dueDate ? new Date(dueDate).toISOString() : null,
+    };
+
+    // Add optimistically first
+    const optimisticId = addOptimistic(taskData);
+    
+    // Clear form and close immediately for better UX
+    setTitle("");
+    setDueDate("");
+    onClose();
+
     try {
-      await createTask({
-        title: title.trim(),
-        project_id: projectId,
-        area_id: areaId,
-        due_date: dueDate ? new Date(dueDate).toISOString() : null,
-      });
+      // Create task in background
+      await createTask(taskData);
       
-
+      // Refresh to get real data from server
       await refresh();
-
-      
-      setTitle("");
-      setDueDate("");
-      setShowDatePicker(false);
-      onClose();
     } catch (error) {
       console.error("Failed to create task:", error);
-      // Optionally, display an error to the user
+      
+      // Remove optimistic task if there was an error
+      removeOptimistic(optimisticId);
     }
   };
 

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { createProject, updateProject, getProject } from "../lib/queries/projects";
 import { getAreas } from "../lib/queries/areas";
+import { useTaskStore } from "../stores/useTaskStore";
+import { useProjectStore } from "../stores/useProjectStore";
 import type { Database } from "../lib/supabase";
 
 type Area = Database['public']['Tables']['areas']['Row'];
@@ -14,6 +16,8 @@ interface ProjectFormProps {
 
 
 export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
+  const { refresh: refreshTasks } = useTaskStore();
+  const { refresh: refreshProjects, addOptimistic: addOptimisticProject, removeOptimistic: removeOptimisticProject } = useProjectStore();
   const [project, setProject] = useState<Project | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -156,15 +160,32 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
       tags: tags.trim() ? tags.split(",").map((tag: string) => tag.trim()).filter(Boolean) : undefined,
     };
 
+    let optimisticId: string | null = null;
+    
     try {
       if (projectId && project) {
+        // For updates, just update directly
         await updateProject(projectId, projectData);
       } else {
+        // For new projects, add optimistically first
+        optimisticId = addOptimisticProject(projectData);
+        
+        // Close the form immediately for better UX
+        onClose();
+        
+        // Then create the project in the background
         await createProject(projectData);
       }
-      onClose();
+      
+      // Refresh both stores to get real data from server
+      await Promise.all([refreshTasks(), refreshProjects()]);
     } catch (error) {
       console.error(`Failed to ${projectId ? 'update' : 'create'} project:`, error);
+      
+      // If there was an error and we added optimistically, remove it
+      if (optimisticId) {
+        removeOptimisticProject(optimisticId);
+      }
     }
   };
 
