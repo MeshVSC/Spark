@@ -637,7 +637,7 @@ export function Sidebar({
                             />
                             <button
                               onClick={() => onProjectSelect(project.id)}
-                              className="truncate text-left hover:text-blue-600 transition-colors flex-1"
+                              className="truncate text-left hover:text-gray-900 transition-colors flex-1"
                             >
                               {project.name}
                             </button>
@@ -734,7 +734,7 @@ export function Sidebar({
                       />
                       <button
                         onClick={() => onProjectSelect(project.id)}
-                        className="truncate text-left hover:text-blue-600 transition-colors flex-1"
+                        className="truncate text-left hover:text-gray-900 transition-colors flex-1"
                       >
                         {project.name}
                       </button>

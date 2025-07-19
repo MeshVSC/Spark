@@ -94,8 +94,9 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
 
   // Group tasks by project when not viewing a specific project
   useEffect(() => {
+    console.log('TaskList useEffect:', { projectId, areaId, projectsLength: projects.length, tasksLength: tasks.length });
     
-    if (projectId || areaId || !projects.length) {
+    if (projectId || !projects.length) {
       setProjectsWithTasks([]);
       return;
     }
@@ -113,7 +114,14 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
       }
     });
 
-    const organized = projects.map(project => {
+    // Filter projects by area if areaId is provided
+    const filteredProjects = areaId 
+      ? projects.filter(p => p.area_id === areaId)
+      : projects;
+    
+    console.log('Filtered projects:', { areaId, filteredProjectsLength: filteredProjects.length, allProjectsLength: projects.length });
+
+    const organized = filteredProjects.map(project => {
       const projectTasks = projectTaskMap.get(project.id) || [];
       const completedCount = projectTasks.filter(t => t.completed).length;
       return {
@@ -125,7 +133,12 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     }).filter(p => p.totalCount > 0);
 
     // Add unassigned tasks as a special "Inbox" project if any exist
-    if (unassignedTasks.length > 0) {
+    // Only include unassigned tasks from the selected area if areaId is provided
+    const filteredUnassignedTasks = areaId 
+      ? unassignedTasks.filter(t => t.area_id === areaId)
+      : unassignedTasks;
+
+    if (filteredUnassignedTasks.length > 0) {
       organized.unshift({
         id: 'unassigned',
         name: 'Inbox',
@@ -136,9 +149,9 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
         sort_order: 0,
         created_at: '',
         updated_at: '',
-        tasks: unassignedTasks,
-        completedCount: unassignedTasks.filter(t => t.completed).length,
-        totalCount: unassignedTasks.length
+        tasks: filteredUnassignedTasks,
+        completedCount: filteredUnassignedTasks.filter(t => t.completed).length,
+        totalCount: filteredUnassignedTasks.length
       });
     }
 

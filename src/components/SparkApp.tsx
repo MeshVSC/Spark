@@ -398,7 +398,11 @@ export function SparkApp() {
                           <ProgressCircle 
                             completion={(() => {
                               const areaProjects = projects.filter(p => p.area_id === area.id);
-                              const areaTasks = allTasks.filter(t => t.area_id === area.id);
+                              const areaProjectIds = areaProjects.map(p => p.id);
+                              const areaTasks = allTasks.filter(t => 
+                                t.area_id === area.id || 
+                                (t.project_id && areaProjectIds.includes(t.project_id))
+                              );
                               const completedTasks = areaTasks.filter(t => t.completed).length;
                               const totalTasks = areaTasks.length;
                               return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
