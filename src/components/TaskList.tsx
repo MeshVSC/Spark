@@ -30,7 +30,7 @@ interface ProjectWithTasks extends Project {
 export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: TaskListProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsWithTasks, setProjectsWithTasks] = useState<ProjectWithTasks[]>([]);
-  const { tasks: allTasks } = useTaskStore();
+  const { tasks: allTasks, refresh, deleteOptimistic } = useTaskStore();
 
   const tasks = useMemo(() => {
     let list = allTasks;
@@ -167,10 +167,20 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
   };
 
   const handleDelete = async (id: string) => {
+    // Delete optimistically first for instant UI feedback
+    deleteOptimistic(id);
+    
     try {
+      // Then delete from server in background
       await deleteTask(id);
+      
+      // Refresh to ensure consistency with server
+      await refresh();
     } catch (error) {
       console.error("Failed to delete task:", error);
+      
+      // If deletion failed, refresh to restore the task
+      await refresh();
     }
   };
 

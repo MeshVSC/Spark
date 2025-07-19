@@ -10,6 +10,7 @@ interface TaskStore {
   addOptimistic: (task: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => string
   updateOptimistic: (id: string, updates: Partial<Task>) => void
   removeOptimistic: (id: string) => void
+  deleteOptimistic: (id: string) => void
 }
 
 const TaskStoreContext = createContext<TaskStore | undefined>(undefined)
@@ -51,6 +52,10 @@ export function TaskStoreProvider({ children }: { children: React.ReactNode }) {
     setTasks(prev => prev.filter(task => task.id !== id))
   }
 
+  const deleteOptimistic = (id: string) => {
+    setTasks(prev => prev.filter(task => task.id !== id))
+  }
+
   useEffect(() => {
     refresh()
     const channel = subscribeToTasks(refresh)
@@ -65,7 +70,8 @@ export function TaskStoreProvider({ children }: { children: React.ReactNode }) {
       refresh, 
       addOptimistic, 
       updateOptimistic, 
-      removeOptimistic 
+      removeOptimistic,
+      deleteOptimistic 
     }}>
       {children}
     </TaskStoreContext.Provider>

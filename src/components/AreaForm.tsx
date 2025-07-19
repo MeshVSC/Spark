@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { createArea, getAreas, updateArea } from "../lib/queries/areas";
+import { createArea, getAreas, updateArea, deleteArea } from "../lib/queries/areas";
 import { useTaskStore } from "../stores/useTaskStore";
 import { useAreaStore } from "../stores/useAreaStore";
 
@@ -121,11 +121,12 @@ const folderIcons = [
 
 export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
   const { refresh: refreshTasks } = useTaskStore();
-  const { refresh: refreshAreas, addOptimistic: addOptimisticArea, removeOptimistic: removeOptimisticArea } = useAreaStore();
+  const { refresh: refreshAreas, addOptimistic: addOptimisticArea, removeOptimistic: removeOptimisticArea, deleteOptimistic: deleteOptimisticArea } = useAreaStore();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedIcon, setSelectedIcon] = useState(folderIcons[0]);
   const [loading, setLoading] = useState(false);
+  const [currentArea, setCurrentArea] = useState<any>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Load existing area data if editing
@@ -135,6 +136,7 @@ export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
       getAreas().then(areas => {
         const area = areas.find(a => a.id === editingAreaId);
         if (area) {
+          setCurrentArea(area);
           setName(area.name);
           setDescription(area.description || "");
           // Find matching icon or default to first one
@@ -211,6 +213,34 @@ export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!editingAreaId || !currentArea) return;
+    
+    // Show confirmation
+    if (!confirm(`Are you sure you want to delete "${currentArea.name}"? This action cannot be undone.`)) {
+      return;
+    }
+    
+    // Delete optimistically first for instant UI feedback
+    deleteOptimisticArea(editingAreaId);
+    
+    // Close the form immediately
+    onClose();
+    
+    try {
+      // Delete from server in background
+      await deleteArea(editingAreaId);
+      
+      // Refresh to ensure consistency
+      await Promise.all([refreshTasks(), refreshAreas()]);
+    } catch (error) {
+      console.error("Failed to delete area:", error);
+      
+      // If deletion failed, refresh to restore the area
+      await Promise.all([refreshTasks(), refreshAreas()]);
+    }
+  };
+
   return (
     <div className="things-modal">
       <div ref={modalRef} className="things-modal-content max-w-lg">
@@ -263,23 +293,39 @@ export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
 
         {/* Actions */}
         <div className="border-t border-gray-200">
-          <div className="px-6 py-4 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-2 py-1 text-gray-500 hover:text-gray-700 text-xs"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              form="folderForm"
-              disabled={!name.trim() || loading}
-              className="px-3 py-1 rounded text-xs disabled:opacity-50"
-              style={{ background: "#90B1F6", color: "white" }}
-            >
-              {loading ? "Saving..." : (editingAreaId ? "Save Changes" : "Create Folder")}
-            </button>
+          <div className="px-6 py-4 flex justify-between">
+            {/* Left side - Delete button (only when editing) */}
+            <div>
+              {editingAreaId && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="px-3 py-1 rounded text-xs text-red-600 hover:bg-red-50 border border-red-200 hover:border-red-300 transition-colors"
+                >
+                  Delete Folder
+                </button>
+              )}
+            </div>
+            
+            {/* Right side - Cancel and Save buttons */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-2 py-1 text-gray-500 hover:text-gray-700 text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="folderForm"
+                disabled={!name.trim() || loading}
+                className="px-3 py-1 rounded text-xs disabled:opacity-50"
+                style={{ background: "#90B1F6", color: "white" }}
+              >
+                {loading ? "Saving..." : (editingAreaId ? "Save Changes" : "Create Folder")}
+              </button>
+            </div>
           </div>
         </div>
       </div>

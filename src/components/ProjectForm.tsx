@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { createProject, updateProject, getProject } from "../lib/queries/projects";
+import { createProject, updateProject, getProject, deleteProject } from "../lib/queries/projects";
 import { getAreas } from "../lib/queries/areas";
 import { useTaskStore } from "../stores/useTaskStore";
 import { useProjectStore } from "../stores/useProjectStore";
@@ -17,7 +17,7 @@ interface ProjectFormProps {
 
 export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
   const { refresh: refreshTasks } = useTaskStore();
-  const { refresh: refreshProjects, addOptimistic: addOptimisticProject, removeOptimistic: removeOptimisticProject } = useProjectStore();
+  const { refresh: refreshProjects, addOptimistic: addOptimisticProject, removeOptimistic: removeOptimisticProject, deleteOptimistic: deleteOptimisticProject } = useProjectStore();
   const [project, setProject] = useState<Project | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -186,6 +186,34 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
       if (optimisticId) {
         removeOptimisticProject(optimisticId);
       }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!projectId || !project) return;
+    
+    // Show confirmation
+    if (!confirm(`Are you sure you want to delete "${project.name}"? This action cannot be undone.`)) {
+      return;
+    }
+    
+    // Delete optimistically first for instant UI feedback
+    deleteOptimisticProject(projectId);
+    
+    // Close the form immediately
+    onClose();
+    
+    try {
+      // Delete from server in background
+      await deleteProject(projectId);
+      
+      // Refresh to ensure consistency
+      await Promise.all([refreshTasks(), refreshProjects()]);
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+      
+      // If deletion failed, refresh to restore the project
+      await Promise.all([refreshTasks(), refreshProjects()]);
     }
   };
 
@@ -393,23 +421,39 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
 
         {/* Actions */}
         <div className="border-t border-gray-200">
-          <div className="px-6 py-4 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-2 py-1 text-gray-500 hover:text-gray-700 text-xs"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              form="projectForm"
-              disabled={!name.trim()}
-              className="px-3 py-1 rounded text-xs disabled:opacity-50"
-              style={{ background: "#90B1F6", color: "white" }}
-            >
-              {projectId ? "Update Project" : "Create Project"}
-            </button>
+          <div className="px-6 py-4 flex justify-between">
+            {/* Left side - Delete button (only when editing) */}
+            <div>
+              {projectId && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="px-3 py-1 rounded text-xs text-red-600 hover:bg-red-50 border border-red-200 hover:border-red-300 transition-colors"
+                >
+                  Delete Project
+                </button>
+              )}
+            </div>
+            
+            {/* Right side - Cancel and Save buttons */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-2 py-1 text-gray-500 hover:text-gray-700 text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="projectForm"
+                disabled={!name.trim()}
+                className="px-3 py-1 rounded text-xs disabled:opacity-50"
+                style={{ background: "#90B1F6", color: "white" }}
+              >
+                {projectId ? "Update Project" : "Create Project"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

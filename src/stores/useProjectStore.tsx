@@ -10,6 +10,7 @@ interface ProjectStore {
   addOptimistic: (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => string
   updateOptimistic: (id: string, updates: Partial<Project>) => void
   removeOptimistic: (id: string) => void
+  deleteOptimistic: (id: string) => void
 }
 
 const ProjectStoreContext = createContext<ProjectStore | undefined>(undefined)
@@ -50,6 +51,10 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
     setProjects(prev => prev.filter(project => project.id !== id))
   }
 
+  const deleteOptimistic = (id: string) => {
+    setProjects(prev => prev.filter(project => project.id !== id))
+  }
+
   useEffect(() => {
     refresh()
     const channel = subscribeToProjects(refresh)
@@ -64,7 +69,8 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
       refresh, 
       addOptimistic, 
       updateOptimistic, 
-      removeOptimistic 
+      removeOptimistic,
+      deleteOptimistic 
     }}>
       {children}
     </ProjectStoreContext.Provider>

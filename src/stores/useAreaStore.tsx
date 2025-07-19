@@ -10,6 +10,7 @@ interface AreaStore {
   addOptimistic: (area: Omit<Area, 'id' | 'created_at' | 'updated_at'>) => string
   updateOptimistic: (id: string, updates: Partial<Area>) => void
   removeOptimistic: (id: string) => void
+  deleteOptimistic: (id: string) => void
 }
 
 const AreaStoreContext = createContext<AreaStore | undefined>(undefined)
@@ -50,6 +51,10 @@ export function AreaStoreProvider({ children }: { children: React.ReactNode }) {
     setAreas(prev => prev.filter(area => area.id !== id))
   }
 
+  const deleteOptimistic = (id: string) => {
+    setAreas(prev => prev.filter(area => area.id !== id))
+  }
+
   useEffect(() => {
     refresh()
     const channel = subscribeToAreas(refresh)
@@ -64,7 +69,8 @@ export function AreaStoreProvider({ children }: { children: React.ReactNode }) {
       refresh, 
       addOptimistic, 
       updateOptimistic, 
-      removeOptimistic 
+      removeOptimistic,
+      deleteOptimistic 
     }}>
       {children}
     </AreaStoreContext.Provider>
