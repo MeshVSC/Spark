@@ -52,7 +52,7 @@ interface DropZoneProps {
   zone: DropZone;
   children: ReactNode;
   className?: string;
-  onDrop?: (dragItem: DragItem, dropZone: DropZone, event: React.DragEvent) => void;
+  onDrop?: (dragItem: DragItem, dropZone: DropZone, targetIndex?: number) => void;
   showDropIndicator?: boolean;
 }
 
@@ -93,7 +93,31 @@ export function DropZone({
     
     if (!isValidDropTarget || !dragItem) return;
     
-    onDrop?.(dragItem, zone, e);
+    // Calculate targetIndex based on drop position
+    let targetIndex: number | undefined;
+    const dropContainer = e.currentTarget as HTMLElement;
+    const draggableElements = Array.from(dropContainer.querySelectorAll('[draggable="true"]'));
+    
+    if (draggableElements.length > 0) {
+      const mouseY = e.clientY;
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+      
+      draggableElements.forEach((element, index) => {
+        const rect = element.getBoundingClientRect();
+        const elementCenterY = rect.top + rect.height / 2;
+        const distance = Math.abs(mouseY - elementCenterY);
+        
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = mouseY < elementCenterY ? index : index + 1;
+        }
+      });
+      
+      targetIndex = closestIndex;
+    }
+    
+    onDrop?.(dragItem, zone, targetIndex);
     endDrag();
   };
 

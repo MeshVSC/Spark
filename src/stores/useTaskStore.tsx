@@ -20,7 +20,7 @@ export function TaskStoreProvider({ children }: { children: React.ReactNode }) {
 
   const refresh = async () => {
     try {
-      const fetched = await getTasks({ view: 'stats' })
+      const fetched = await getTasks()
       setTasks(fetched)
     } catch (err) {
       console.error('Failed to refresh tasks:', err)

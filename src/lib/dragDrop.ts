@@ -101,11 +101,12 @@ export async function handleTaskDrop(
       
     case 'task-list':
       // Reordering within the same list
-      console.log('Reordering task in list:', { taskId, newSortOrder });
+      console.log('Reordering task in list:', { taskId, newSortOrder, targetIndex, allTasksCount: allTasks?.length });
       if (newSortOrder) {
+        console.log('Updating task order with calculated sort order:', newSortOrder);
         await updateTaskOrder(taskId, newSortOrder);
       } else {
-        console.warn('No sort order calculated for task reordering');
+        console.warn('No sort order calculated for task reordering, using timestamp fallback');
         // If no sort order calculated, use current timestamp as fallback
         await updateTaskOrder(taskId, Date.now());
       }

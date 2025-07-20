@@ -281,9 +281,16 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
         allTasksCount: allTasks.length 
       });
       
+      // For task reordering, we need to pass the filtered tasks that are actually being displayed
+      const relevantTasks = projectId 
+        ? allTasks.filter(t => t.project_id === projectId)
+        : areaId 
+        ? allTasks.filter(t => t.area_id === areaId || (t.project_id && projects.find(p => p.id === t.project_id && p.area_id === areaId)))
+        : allTasks;
+      
       await handleDrop(dragItem, dropZone, {
         targetIndex,
-        allTasks: allTasks.map(t => ({ id: t.id, sort_order: t.sort_order })),
+        allTasks: relevantTasks.map(t => ({ id: t.id, sort_order: t.sort_order })),
         targetProjectId: projectId || undefined,
         targetAreaId: areaId || undefined,
       });
