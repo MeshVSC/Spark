@@ -22,6 +22,7 @@ import { useTaskNavigation } from "../hooks/useTaskNavigation";
 import { MockupDataButton } from "./MockupDataButton";
 import type { Database } from "../lib/supabase";
 import ProgressCircle from "./ui/ProgressCircle";
+import { DragDropProvider } from "../contexts/DragDropContext";
 
 // Icon mapping for areas - copied from Sidebar
 const getAreaIcon = (iconName?: string | null) => {
@@ -299,7 +300,8 @@ export function SparkApp() {
   };
 
   return (
-    <div className="h-screen flex" style={{ background: '#FAFAFA' }}>
+    <DragDropProvider>
+      <div className="h-screen flex" style={{ background: '#FAFAFA' }}>
       {/* Sidebar */}
       <Sidebar
         currentView={currentView}
@@ -669,6 +671,7 @@ export function SparkApp() {
         areaId={null}
       />
 
-    </div>
+      </div>
+    </DragDropProvider>
   );
 }

@@ -137,6 +137,24 @@ export async function deleteSubtask(id: string) {
   if (error) throw error
 }
 
+// Update subtask order for drag and drop
+export async function updateSubtaskOrder(id: string, sortOrder: number, taskId?: string) {
+  const userId = await getUserId()
+  
+  const updates: any = { sort_order: sortOrder }
+  if (taskId !== undefined) {
+    updates.task_id = taskId
+  }
+  
+  const { error } = await supabase
+    .from('subtasks')
+    .update(updates)
+    .eq('id', id)
+    .eq('user_id', userId)
+
+  if (error) throw error
+}
+
 // Real-time subscription for subtasks
 export function subscribeToSubtasks(taskId: string, callback: (subtasks: Subtask[]) => void) {
   return supabase

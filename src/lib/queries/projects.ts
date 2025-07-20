@@ -112,6 +112,24 @@ export async function deleteProject(id: string) {
   if (error) throw error
 }
 
+// Update project order for drag and drop
+export async function updateProjectOrder(id: string, sortOrder: number, areaId?: string) {
+  const userId = await getUserId()
+  
+  const updates: any = { sort_order: sortOrder }
+  if (areaId !== undefined) {
+    updates.area_id = areaId
+  }
+  
+  const { error } = await supabase
+    .from('projects')
+    .update(updates)
+    .eq('id', id)
+    .eq('user_id', userId)
+
+  if (error) throw error
+}
+
 // Real-time subscription for projects
 export function subscribeToProjects(callback: () => void) {
   return supabase

@@ -14,7 +14,7 @@ interface TaskItemProps {
   task: Task;
   onToggle: () => void;
   onDelete: () => void;
-  onEditTask: (taskId: string) => void;
+  onEditTask: (taskId: string) => void; // New prop
 }
 
 export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps) {
@@ -61,11 +61,14 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
     }
   };
 
+
   const handleAddSubtask = () => {
     setShowSubtaskForm(true);
   };
 
   const handleSubtaskCreated = async () => {
+    // The real-time subscription will automatically update subtasks
+    // so we just need to show the subtasks section
     setShowSubtasks(true);
   };
 
@@ -90,21 +93,23 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
             <DragHandle className="drag-handle" />
           </div>
 
-          {/* Completion Checkbox */}
-          <div className="flex-shrink-0">
-            <CustomCheckbox 
-              checked={task.completed}
-              onChange={() => onToggle()}
-              className="mt-1"
-            />
-          </div>
+          <div className="flex-1">
+            <div className="flex items-start gap-3">
+              {/* Completion Checkbox */}
+              <div className="flex-shrink-0">
+                <CustomCheckbox 
+                  checked={task.completed}
+                  onChange={() => onToggle()}
+                  className="mt-1"
+                />
+              </div>
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                {/* Title with metadata */}
-                <div className="flex items-center gap-2 flex-wrap">
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    {/* Title with metadata */}
+                    <div className="flex items-center gap-2 flex-wrap">
                   {/* Task title */}
                   <button
                     onClick={() => onEditTask(task.id)}
@@ -113,7 +118,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                     <span className="task-title">{task.title}</span>
                   </button>
                   
-                  {/* Subtask dropdown arrow and counter */}
+                  {/* Subtask dropdown arrow and counter - comes after title */}
                   {totalSubtasks > 0 && (
                     <button
                       onClick={(e) => {
@@ -137,7 +142,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                     </button>
                   )}
                   
-                  {/* Document/sheet icon */}
+                  {/* Document/sheet icon - comes after title */}
                   {task.notes && (
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -148,7 +153,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                     </svg>
                   )}
                   
-                  {/* Tags */}
+                  {/* Tags - come after title */}
                   {task.tags && task.tags.length > 0 && (
                     <div className="flex gap-1">
                       {task.tags.slice(0, 2).map((tag, index) => (
@@ -159,7 +164,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                     </div>
                   )}
                   
-                  {/* Dates */}
+                  {/* Dates - come after title */}
                   {task.due_date && (
                     <span className="task-metadata things-date-badge things-date-due">
                       Due {formatDate(task.due_date)}
@@ -179,6 +184,8 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                     {task.notes}
                   </p>
                 )}
+
+
               </div>
 
               {/* Actions */}
@@ -205,6 +212,8 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                 </button>
               </div>
             </div>
+          </div>
+        </div>
 
             {/* Subtasks */}
             {showSubtasks && totalSubtasks > 0 && (
@@ -212,6 +221,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
                 <SubtaskList taskId={task.id} />
               </div>
             )}
+            </div>
           </div>
         </div>
       </Draggable>
@@ -226,3 +236,4 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
     </>
   );
 }
+

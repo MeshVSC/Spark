@@ -245,6 +245,19 @@ export async function updateTask(id: string, updates: TaskUpdate) {
   return data
 }
 
+// Update task order for drag and drop
+export async function updateTaskOrder(id: string, sortOrder: number) {
+  const userId = await getUserId()
+  
+  const { error } = await supabase
+    .from('tasks')
+    .update({ sort_order: sortOrder })
+    .eq('id', id)
+    .eq('user_id', userId)
+
+  if (error) throw error
+}
+
 // Toggle task completion
 export async function toggleTask(id: string) {
   const userId = await getUserId()

@@ -97,6 +97,19 @@ export async function deleteArea(id: string) {
   if (error) throw error
 }
 
+// Update area order for drag and drop
+export async function updateAreaOrder(id: string, sortOrder: number) {
+  const userId = await getUserId()
+  
+  const { error } = await supabase
+    .from('areas')
+    .update({ sort_order: sortOrder })
+    .eq('id', id)
+    .eq('user_id', userId)
+
+  if (error) throw error
+}
+
 // Real-time subscription for areas
 export function subscribeToAreas(callback: () => void) {
   return supabase

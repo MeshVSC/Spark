@@ -5,6 +5,9 @@ import { TaskItem } from "./TaskItem";
 import type { Database } from "../lib/supabase";
 import ProgressCircle from "./ui/ProgressCircle";
 import { useTaskStore } from "../stores/useTaskStore";
+import { DropZone } from "./DragDropComponents";
+import { handleDrop } from "../lib/dragDrop";
+import type { DragItem, DropZone as DropZoneType } from "../contexts/DragDropContext";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -266,23 +269,46 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     </div>
   );
 
+  // Handle drop events
+  const handleTaskDrop = async (dragItem: DragItem, dropZone: DropZoneType) => {
+    try {
+      await handleDrop(dragItem, dropZone, {
+        allTasks: allTasks.map(t => ({ id: t.id, sort_order: t.sort_order })),
+        targetProjectId: projectId || undefined,
+        targetAreaId: areaId || undefined,
+      });
+      await refresh(); // Refresh to show the updated order
+    } catch (error) {
+      console.error('Failed to handle task drop:', error);
+    }
+  };
+
   // If viewing a specific project, show traditional task list
   // For areas, we want to show projects organized view, not flat task list
   if (projectId) {
     const filteredTasks = applyFilters(tasks);
 
+    const dropZone: DropZoneType = {
+      id: `project-${projectId}`,
+      type: 'task-list',
+      accepts: ['task'],
+      sectionRestriction: 'none'
+    };
+
     return (
-      <div className="space-y-0">
-        {filteredTasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onToggle={() => handleToggle(task.id)}
-            onDelete={() => handleDelete(task.id)}
-            onEditTask={onEditTask}
-          />
-        ))}
-      </div>
+      <DropZone zone={dropZone} onDrop={handleTaskDrop} className="relative">
+        <div className="space-y-0">
+          {filteredTasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggle={() => handleToggle(task.id)}
+              onDelete={() => handleDelete(task.id)}
+              onEditTask={onEditTask}
+            />
+          ))}
+        </div>
+      </DropZone>
     );
   }
 
@@ -305,21 +331,30 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
         const filteredTasks = applyFilters(project.tasks);
         if (filteredTasks.length === 0) return null;
         
+        const projectDropZone: DropZoneType = {
+          id: `project-tasks-${project.id}`,
+          type: 'project',
+          accepts: ['task'],
+          sectionRestriction: 'none'
+        };
+        
         return (
           <div key={project.id} className="space-y-3">
             <ProjectHeader project={project} />
             
-            <div className="space-y-0">
-              {filteredTasks.map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  onToggle={() => handleToggle(task.id)}
-                  onDelete={() => handleDelete(task.id)}
-                  onEditTask={onEditTask}
-                />
-              ))}
-            </div>
+            <DropZone zone={projectDropZone} onDrop={handleTaskDrop} className="relative">
+              <div className="space-y-0">
+                {filteredTasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onToggle={() => handleToggle(task.id)}
+                    onDelete={() => handleDelete(task.id)}
+                    onEditTask={onEditTask}
+                  />
+                ))}
+              </div>
+            </DropZone>
           </div>
         );
       })}
