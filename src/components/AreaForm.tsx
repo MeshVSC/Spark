@@ -300,7 +300,7 @@ export function AreaForm({ editingAreaId, onClose }: AreaFormProps) {
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="px-3 py-1 rounded text-xs text-red-600 hover:bg-red-50 border border-red-200 hover:border-red-300 transition-colors"
+                  className="px-3 py-1 rounded text-xs text-gray-600 hover:bg-gray-50 border border-gray-200 hover:border-gray-300 transition-colors"
                 >
                   Delete Folder
                 </button>

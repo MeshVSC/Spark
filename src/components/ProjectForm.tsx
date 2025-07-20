@@ -262,23 +262,29 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
                 
                 {!dueDate ? (
                   <div className="relative flex items-center">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" 
-                         className="absolute left-1 pointer-events-none" 
-                         style={{ color: 'var(--things-gray-400)' }}>
-                      <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                    </svg>
                     <input
                       type="text"
                       value={dueDateSearch}
                       onChange={(e) => setDueDateSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Tab' || e.key === 'Enter') {
+                          const suggestion = getSuggestion(dueDateSearch);
+                          if (suggestion) {
+                            e.preventDefault();
+                            setDueDateSearch(suggestion.toLowerCase());
+                          }
+                        }
+                      }}
                       className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
-                      placeholder=""
+                      placeholder={getSuggestion(dueDateSearch) || "🔍"}
                       style={{ color: 'var(--things-gray-600)' }}
                     />
-                    {getSuggestion(dueDateSearch) && (
-                      <span className="text-xs font-medium ml-1" style={{ color: 'var(--things-gray-600)' }}>
-                        {getSuggestion(dueDateSearch)}
-                      </span>
+                    {!dueDateSearch && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" 
+                           className="absolute left-1 pointer-events-none" 
+                           style={{ color: 'var(--things-gray-400)' }}>
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                      </svg>
                     )}
                   </div>
                 ) : (
@@ -428,7 +434,7 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="px-3 py-1 rounded text-xs text-red-600 hover:bg-red-50 border border-red-200 hover:border-red-300 transition-colors"
+                  className="px-3 py-1 rounded text-xs text-gray-600 hover:bg-gray-50 border border-gray-200 hover:border-gray-300 transition-colors"
                 >
                   Delete Project
                 </button>

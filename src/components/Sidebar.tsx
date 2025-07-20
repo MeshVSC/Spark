@@ -525,6 +525,11 @@ export function Sidebar({
         </div>
       </div>
 
+      {/* Separator line */}
+      {!collapsed && (
+        <div className="mx-4 border-t border-gray-300"></div>
+      )}
+
       {/* Folders and Projects Section */}
       {!collapsed && (
         <div className="flex-1 overflow-hidden pt-8">
