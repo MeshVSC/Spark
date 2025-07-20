@@ -17,10 +17,23 @@ export function calculateSortOrder(
   targetIndex: number,
   draggedItemId?: string
 ): number {
+  console.log('calculateSortOrder called:', { 
+    itemsLength: items.length, 
+    targetIndex, 
+    draggedItemId,
+    items: items.map(i => ({ id: i.id, sort_order: i.sort_order }))
+  });
+  
   // Filter out the dragged item if it's already in the list
   const filteredItems = items.filter(item => item.id !== draggedItemId);
   
+  // Sort items by their current sort_order to ensure correct positioning
+  filteredItems.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  
+  console.log('Filtered and sorted items:', filteredItems.map(i => ({ id: i.id, sort_order: i.sort_order })));
+  
   if (filteredItems.length === 0) {
+    console.log('No items, using default sort order: 1000');
     return 1000; // Default sort order for first item
   }
   
@@ -28,24 +41,45 @@ export function calculateSortOrder(
   if (targetIndex === 0) {
     const firstItem = filteredItems[0];
     const firstOrder = firstItem.sort_order || 1000;
-    return Math.max(1, firstOrder - 1000);
+    const newOrder = Math.max(1, firstOrder - 1000);
+    console.log('Dropping at beginning, new order:', newOrder);
+    return newOrder;
   }
   
   // If dropping at the end
   if (targetIndex >= filteredItems.length) {
     const lastItem = filteredItems[filteredItems.length - 1];
     const lastOrder = lastItem.sort_order || 1000;
-    return lastOrder + 1000;
+    const newOrder = lastOrder + 1000;
+    console.log('Dropping at end, new order:', newOrder);
+    return newOrder;
   }
   
   // If dropping between items
   const prevItem = filteredItems[targetIndex - 1];
   const nextItem = filteredItems[targetIndex];
-  const prevOrder = prevItem.sort_order || 1000;
-  const nextOrder = nextItem.sort_order || 1000;
+  const prevOrder = prevItem?.sort_order || 0;
+  const nextOrder = nextItem?.sort_order || 2000;
   
-  // Create a sort order between the two items
-  return Math.floor((prevOrder + nextOrder) / 2);
+  // Ensure we have enough space between items
+  let newOrder: number;
+  if (nextOrder - prevOrder <= 1) {
+    // Items are too close, use timestamp-based approach
+    newOrder = Date.now();
+  } else {
+    // Create a sort order between the two items
+    newOrder = Math.floor((prevOrder + nextOrder) / 2);
+  }
+  
+  console.log('Dropping between items:', { 
+    prevOrder, 
+    nextOrder, 
+    newOrder,
+    prevItem: prevItem?.id,
+    nextItem: nextItem?.id
+  });
+  
+  return newOrder;
 }
 
 // Handle task drops

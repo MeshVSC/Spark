@@ -41,7 +41,7 @@ export async function getTasks({
     query = query.eq('area_id', areaId)
   }
 
-  const { data: tasks, error } = await query
+  const { data: tasks, error } = await query.order('sort_order', { ascending: true })
   
   if (error) throw error
   if (!tasks) return []

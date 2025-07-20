@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { useDragDrop, type DragItem, type DropZone } from '../contexts/DragDropContext';
 
 interface DraggableProps {
@@ -56,6 +56,49 @@ interface DropZoneProps {
   showDropIndicator?: boolean;
 }
 
+interface InsertionIndicatorProps {
+  position: number;
+  container: HTMLElement;
+  show: boolean;
+}
+
+function InsertionIndicator({ position, container, show }: InsertionIndicatorProps) {
+  if (!show) return null;
+  
+  const draggableElements = Array.from(container.querySelectorAll('[draggable="true"]'));
+  let topPosition = 0;
+  
+  if (position === 0) {
+    // Insert at the beginning
+    topPosition = 0;
+  } else if (position >= draggableElements.length) {
+    // Insert at the end
+    const lastElement = draggableElements[draggableElements.length - 1] as HTMLElement;
+    if (lastElement) {
+      const containerRect = container.getBoundingClientRect();
+      const lastRect = lastElement.getBoundingClientRect();
+      topPosition = lastRect.bottom - containerRect.top;
+    }
+  } else {
+    // Insert between elements
+    const targetElement = draggableElements[position] as HTMLElement;
+    if (targetElement) {
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = targetElement.getBoundingClientRect();
+      topPosition = targetRect.top - containerRect.top;
+    }
+  }
+  
+  return (
+    <div 
+      className="absolute left-0 right-0 h-0.5 bg-blue-500 rounded-full z-10 shadow-lg"
+      style={{ top: topPosition - 1 }}
+    >
+      <div className="absolute left-2 -top-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+    </div>
+  );
+}
+
 export function DropZone({ 
   zone, 
   children, 
@@ -64,6 +107,8 @@ export function DropZone({
   showDropIndicator = true 
 }: DropZoneProps) {
   const { dragItem, dragOverZone, setDragOver, canDrop, endDrag } = useDragDrop();
+  const [insertionIndex, setInsertionIndex] = useState<number | null>(null);
+  const [dropContainer, setDropContainer] = useState<HTMLElement | null>(null);
   
   const isValidDropTarget = dragItem && canDrop(zone);
   const isDropTarget = dragOverZone === zone.id;
@@ -74,29 +119,11 @@ export function DropZone({
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setDragOver(zone.id);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    // Only clear drag over if we're actually leaving this element
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX;
-    const y = e.clientY;
     
-    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-      setDragOver(null);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(null);
-    
-    if (!isValidDropTarget || !dragItem) return;
-    
-    // Calculate targetIndex based on drop position
-    let targetIndex: number | undefined;
-    const dropContainer = e.currentTarget as HTMLElement;
-    const draggableElements = Array.from(dropContainer.querySelectorAll('[draggable="true"]'));
+    // Calculate insertion position for visual feedback
+    const container = e.currentTarget as HTMLElement;
+    setDropContainer(container);
+    const draggableElements = Array.from(container.querySelectorAll('[draggable="true"]'));
     
     if (draggableElements.length > 0) {
       const mouseY = e.clientY;
@@ -114,8 +141,37 @@ export function DropZone({
         }
       });
       
-      targetIndex = closestIndex;
+      setInsertionIndex(closestIndex);
+    } else {
+      setInsertionIndex(0);
     }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear drag over if we're actually leaving this element
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setDragOver(null);
+      setInsertionIndex(null);
+      setDropContainer(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(null);
+    
+    if (!isValidDropTarget || !dragItem) return;
+    
+    // Use the calculated insertion index from drag over
+    const targetIndex = insertionIndex ?? 0;
+    
+    // Clear insertion indicator
+    setInsertionIndex(null);
+    setDropContainer(null);
     
     onDrop?.(dragItem, zone, targetIndex);
     endDrag();
@@ -134,8 +190,17 @@ export function DropZone({
     >
       {children}
       
+      {/* Insertion indicator */}
+      {isValidDropTarget && isDropTarget && showDropIndicator && insertionIndex !== null && dropContainer && (
+        <InsertionIndicator 
+          position={insertionIndex}
+          container={dropContainer}
+          show={true}
+        />
+      )}
+      
       {/* Drop indicator */}
-      {isValidDropTarget && isDropTarget && showDropIndicator && (
+      {isValidDropTarget && isDropTarget && showDropIndicator && !insertionIndex && (
         <div className="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg pointer-events-none opacity-75" />
       )}
     </div>
