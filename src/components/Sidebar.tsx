@@ -9,6 +9,9 @@ import { useSettings } from "../contexts/SettingsContext";
 import { useTaskNavigation } from "../hooks/useTaskNavigation";
 import type { Database } from "../lib/supabase";
 import ProgressCircle from "./ui/ProgressCircle";
+import { Draggable, DropZone, DragHandle } from "./DragDropComponents";
+import { handleDrop } from "../lib/dragDrop";
+import type { DragItem, DropZone as DropZoneType } from "../contexts/DragDropContext";
 
 // Icon mapping for areas - returns JSX elements instead of emoji
 const getAreaIcon = (iconName?: string | null) => {
@@ -143,6 +146,25 @@ export function Sidebar({
   const [showSettings, setShowSettings] = useState(false);
   const { settings } = useSettings();
   const { openTask } = useTaskNavigation();
+
+  // Handle drop events in sidebar
+  const handleSidebarDrop = async (dragItem: DragItem, dropZone: DropZoneType) => {
+    try {
+      await handleDrop(dragItem, dropZone, {
+        allTasks: projectTasks ? Object.values(projectTasks).flat().map(t => ({ id: t.id, sort_order: t.sort_order })) : [],
+        allProjects: projects.map(p => ({ id: p.id, sort_order: p.sort_order })),
+        allAreas: areas.map(a => ({ id: a.id, sort_order: a.sort_order })),
+        targetProjectId: dropZone.id.startsWith('project-') ? dropZone.id.replace('project-', '') : undefined,
+        targetAreaId: dropZone.id.startsWith('area-') ? dropZone.id.replace('area-', '') : undefined,
+      });
+      // Refresh data after successful drop
+      setTimeout(() => {
+        window.location.reload(); // For now, refresh the page to show updates
+      }, 100);
+    } catch (error) {
+      console.error('Failed to handle sidebar drop:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -432,9 +454,12 @@ export function Sidebar({
               } transition-all duration-150`}
             >
               <div className="flex items-center w-full">
+                {!collapsed && (
+                  <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 ml-2 mr-2" />
+                )}
                 <button
                   onClick={() => onViewChange(view.id)}
-                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
+                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 pl-0'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
                     currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
                   }`}
                   title={collapsed ? view.name : undefined}
@@ -477,9 +502,12 @@ export function Sidebar({
               } transition-all duration-150`}
             >
               <div className="flex items-center w-full">
+                {!collapsed && (
+                  <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 ml-2 mr-2" />
+                )}
                 <button
                   onClick={() => onViewChange(view.id)}
-                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
+                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 pl-0'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
                     currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
                   }`}
                   title={collapsed ? view.name : undefined}
@@ -620,63 +648,78 @@ export function Sidebar({
             const isAreaCollapsed = collapsedAreas.has(area.id);
             const hasProjects = areaProjects.length > 0;
             
+            const areaDragItem: DragItem = {
+              id: area.id,
+              type: 'area',
+              data: area
+            };
+            
+            const areaDropZone: DropZoneType = {
+              id: `area-${area.id}`,
+              type: 'area',
+              accepts: ['task', 'project'],
+              sectionRestriction: 'folders'
+            };
+            
             return (
-              <div key={area.id} style={{ marginBottom: '12px' }}>
-                {/* Area */}
-                <div
-                  className={`w-full group ${
-                    selectedAreaId === area.id
-                      ? 'bg-gray-300'
-                      : 'hover:bg-gray-200'
-                  } transition-all duration-150`}
-                >
-                  <div className="flex items-center w-full">
-                    <button
-                      onClick={() => onAreaSelect(area.id)}
-                      className={`flex items-center gap-2 py-0.5 text-sm font-semibold flex-1 text-gray-700 ${
-                        selectedAreaId === area.id ? 'text-gray-900' : ''
-                      }`}
-                      style={{ paddingLeft: '18px', paddingRight: '1rem' }}
-                    >
-                      {getAreaIcon(area.color)}
-                      <span className="truncate">{area.name}</span>
-                    </button>
-                    <button
-                      onClick={() => onEditArea(area)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150"
-                    >
-                      <div className="flex gap-0.5">
-                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                      </div>
-                    </button>
-                    {hasProjects && (
+              <DropZone key={area.id} zone={areaDropZone} onDrop={handleSidebarDrop}>
+                <div style={{ marginBottom: '12px' }}>
+                  {/* Area */}
+                  <Draggable
+                    item={areaDragItem}
+                    className={`w-full group ${
+                      selectedAreaId === area.id
+                        ? 'bg-gray-300'
+                        : 'hover:bg-gray-200'
+                    } transition-all duration-150`}
+                  >
+                    <div className="flex items-center w-full">
+                      <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 ml-2 mr-2" />
                       <button
-                        onClick={() => {
-                          const newCollapsed = new Set(collapsedAreas);
-                          if (isAreaCollapsed) {
-                            newCollapsed.delete(area.id);
-                          } else {
-                            newCollapsed.add(area.id);
-                          }
-                          setCollapsedAreas(newCollapsed);
-                        }}
-                        className="p-1 hover:bg-gray-300 rounded transition-all duration-150 mr-2"
+                        onClick={() => onAreaSelect(area.id)}
+                        className={`flex items-center gap-3 py-0.5 text-sm font-semibold flex-1 text-gray-700 pl-0 pr-4 ${
+                          selectedAreaId === area.id ? 'text-gray-900' : ''
+                        }`}
                       >
-                        <svg 
-                          width="12" 
-                          height="12" 
-                          viewBox="0 0 24 24" 
-                          fill="currentColor" 
-                          className={`text-gray-500 transition-transform duration-150 ${isAreaCollapsed ? 'rotate-0' : 'rotate-90'}`}
-                        >
-                          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                        </svg>
+                        {getAreaIcon(area.color)}
+                        <span className="truncate">{area.name}</span>
                       </button>
-                    )}
-                  </div>
-                </div>
+                      <button
+                        onClick={() => onEditArea(area)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150"
+                      >
+                        <div className="flex gap-0.5">
+                          <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                          <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                          <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        </div>
+                      </button>
+                      {hasProjects && (
+                        <button
+                          onClick={() => {
+                            const newCollapsed = new Set(collapsedAreas);
+                            if (isAreaCollapsed) {
+                              newCollapsed.delete(area.id);
+                            } else {
+                              newCollapsed.add(area.id);
+                            }
+                            setCollapsedAreas(newCollapsed);
+                          }}
+                          className="p-1 pr-2 hover:bg-gray-300 rounded transition-all duration-150"
+                        >
+                          <svg 
+                            width="12" 
+                            height="12" 
+                            viewBox="0 0 24 24" 
+                            fill="currentColor" 
+                            className={`text-gray-500 transition-transform duration-150 ${isAreaCollapsed ? 'rotate-0' : 'rotate-90'}`}
+                          >
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </Draggable>
                 
                 {/* Projects under this area */}
                 {!isAreaCollapsed && areaProjects.map((project, index) => {
@@ -695,15 +738,23 @@ export function Sidebar({
                     shouldShowProgress: completionData && completionData.total > 0
                   });
                   
+                  const projectDragItem: DragItem = {
+                    id: project.id,
+                    type: 'project',
+                    data: project
+                  };
+                  
                   return (
                     <div key={project.id} className="pl-0.5" style={{ marginBottom: '0px', marginTop: index === 0 ? '6px' : '0px' }}>
-                      <div 
+                      <Draggable
+                        item={projectDragItem}
                         className={`group flex items-center w-full ${
                           selectedProjectId === project.id 
                             ? 'bg-gray-300' 
                             : 'hover:bg-gray-200'
                         } transition-all duration-150`}
                       >
+                        <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 ml-2" />
                         {/* Project button */}
                         <div
                           className={`flex items-center gap-3 py-0 text-sm font-light flex-1 text-gray-500 ${
@@ -727,76 +778,92 @@ export function Sidebar({
                               {project.name}
                             </button>
                           </div>
+                          
+                          {/* Task count - aligned to right */}
                           {settings.showProjectCounts && taskCount > 0 && (
-                            <span className="text-xs text-gray-400 font-medium">
+                            <span className="text-xs text-gray-400 font-medium mr-2">
                               {taskCount}
                             </span>
                           )}
-                        </div>
-                        
-                        {/* 3-dot menu for projects */}
-                        <button
-                          onClick={() => onProjectEdit(project.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-2"
-                        >
-                          <div className="flex gap-0.5">
-                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                          </div>
-                        </button>
-                        
-                        {/* Collapse/expand arrow - moved to right */}
-                        {settings.showProjectDropdowns && hasItems && (
+                          
+                          {/* 3-dot menu for projects */}
                           <button
-                            onClick={() => toggleProjectCollapse(project.id)}
-                            className="p-1 pr-2 transition-colors"
+                            onClick={() => onProjectEdit(project.id)}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-1"
                           >
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              className={`text-gray-400 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
-                            >
-                              <polyline points="9,18 15,12 9,6"></polyline>
-                            </svg>
+                            <div className="flex gap-0.5">
+                              <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                              <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                              <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                            </div>
                           </button>
-                        )}
-                      </div>
+                          
+                          {/* Collapse/expand arrow - moved to right */}
+                          {settings.showProjectDropdowns && hasItems && (
+                            <button
+                              onClick={() => toggleProjectCollapse(project.id)}
+                              className="p-1 pr-2 transition-colors"
+                            >
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className={`text-gray-400 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                              >
+                                <polyline points="9,18 15,12 9,6"></polyline>
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      </Draggable>
                       
                       {/* Tasks shown when expanded */}
                       {hasItems && settings.showProjectDropdowns && !isCollapsed && (
                         <div className="ml-5 pl-2 space-y-0">
-                          {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
-                            <div
-                              key={task.id}
-                              className="group flex items-center gap-2 py-0.5 px-2 text-xs text-gray-600 cursor-pointer hover:bg-gray-100 rounded transition-all duration-150"
-                              onClick={() => openTask(task.id)}
-                              title={task.title}
-                            >
-                              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
-                              <span className={`truncate leading-none flex-1 ${task.completed ? 'line-through' : ''}`}>
-                                {task.title}
-                              </span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openTask(task.id);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-200 transition-all duration-150 touch-manipulation"
-                                title="Edit task"
+                          {(projectTasks[project.id] || []).slice(0, 5).map((task) => {
+                            const taskDragItem: DragItem = {
+                              id: task.id,
+                              type: 'task',
+                              data: task
+                            };
+                            
+                            return (
+                              <Draggable
+                                key={task.id}
+                                item={taskDragItem}
+                                className="group"
                               >
-                                <div className="flex gap-1 md:gap-0.5">
-                                  <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
-                                  <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
-                                  <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                <div
+                                  className="flex items-center gap-2 py-0.5 px-2 text-xs text-gray-600 cursor-pointer hover:bg-gray-100 rounded transition-all duration-150"
+                                  onClick={() => openTask(task.id)}
+                                  title={task.title}
+                                >
+                                  <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
+                                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                  <span className={`truncate leading-none flex-1 ${task.completed ? 'line-through' : ''}`}>
+                                    {task.title}
+                                  </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openTask(task.id);
+                                    }}
+                                    className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-200 transition-all duration-150 touch-manipulation"
+                                    title="Edit task"
+                                  >
+                                    <div className="flex gap-1 md:gap-0.5">
+                                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                    </div>
+                                  </button>
                                 </div>
-                              </button>
-                            </div>
-                          ))}
+                              </Draggable>
+                            );
+                          })}
                           {(projectTasks[project.id]?.length || 0) > 5 && (
                             <div className="text-xs text-gray-400 pl-3 py-0.5">
                               +{(projectTasks[project.id]?.length || 0) - 5} more
@@ -807,7 +874,8 @@ export function Sidebar({
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              </DropZone>
             );
           })}
           
@@ -819,15 +887,31 @@ export function Sidebar({
             const completionData = projectCompletionStats[project.id];
             const isCompleted = completionData && completionData.total > 0 && completionData.completed === completionData.total;
             
+            const projectDragItem: DragItem = {
+              id: project.id,
+              type: 'project',
+              data: project
+            };
+            
+            const projectDropZone: DropZoneType = {
+              id: `project-${project.id}`,
+              type: 'project',
+              accepts: ['task'],
+              sectionRestriction: 'none'
+            };
+            
             return (
-              <div key={project.id} style={{ marginBottom: '0px' }}>
-                <div 
+              <DropZone key={project.id} zone={projectDropZone} onDrop={handleSidebarDrop}>
+                <div style={{ marginBottom: '0px' }}>
+                <Draggable
+                  item={projectDragItem}
                   className={`group flex items-center w-full ${
                     selectedProjectId === project.id 
                       ? 'bg-gray-300' 
                       : 'hover:bg-gray-200'
                   } transition-all duration-150`}
                 >
+                  <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 ml-2" />
                   {/* Project button */}
                   <div
                     className={`flex items-center gap-3 py-0 text-sm font-light flex-1 text-gray-500 ${
@@ -851,76 +935,92 @@ export function Sidebar({
                         {project.name}
                       </button>
                     </div>
+                    
+                    {/* Task count - aligned to right */}
                     {settings.showProjectCounts && taskCount > 0 && (
-                      <span className="text-xs text-gray-400 font-medium">
+                      <span className="text-xs text-gray-400 font-medium mr-2">
                         {taskCount}
                       </span>
                     )}
-                  </div>
-                  
-                  {/* 3-dot menu for projects */}
-                  <button
-                    onClick={() => onProjectEdit(project.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-2"
-                  >
-                    <div className="flex gap-0.5">
-                      <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                      <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                      <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                    </div>
-                  </button>
-                  
-                  {/* Collapse/expand arrow - moved to right */}
-                  {settings.showProjectDropdowns && hasItems && (
+                    
+                    {/* 3-dot menu for projects */}
                     <button
-                      onClick={() => toggleProjectCollapse(project.id)}
-                      className="p-1 pr-2 transition-colors"
+                      onClick={() => onProjectEdit(project.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-1"
                     >
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className={`text-gray-400 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
-                      >
-                        <polyline points="9,18 15,12 9,6"></polyline>
-                      </svg>
+                      <div className="flex gap-0.5">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                      </div>
                     </button>
-                  )}
-                </div>
+                    
+                    {/* Collapse/expand arrow - moved to right */}
+                    {settings.showProjectDropdowns && hasItems && (
+                      <button
+                        onClick={() => toggleProjectCollapse(project.id)}
+                        className="p-1 pr-2 transition-colors"
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          className={`text-gray-400 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                        >
+                          <polyline points="9,18 15,12 9,6"></polyline>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+              </Draggable>
                 
-                {/* Tasks shown when expanded */}
+              {/* Tasks shown when expanded */}
                 {hasItems && settings.showProjectDropdowns && !isCollapsed && (
                   <div className="ml-5 pl-2 space-y-0">
-                    {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
-                      <div
-                        key={task.id}
-                        className="group flex items-center gap-2 py-0.5 px-2 text-xs text-gray-600 cursor-pointer hover:bg-gray-100 rounded transition-all duration-150"
-                        title={task.title}
-                        onClick={() => openTask(task.id)}
-                      >
-                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                          task.completed ? 'bg-blue-500' : 'border border-gray-300 bg-white'
-                        }`} />
-                        <span className="truncate leading-none flex-1">{task.title}</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openTask(task.id);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-200 transition-all duration-150 touch-manipulation"
-                          title="Edit task"
+                    {(projectTasks[project.id] || []).slice(0, 5).map((task) => {
+                      const taskDragItem: DragItem = {
+                        id: task.id,
+                        type: 'task',
+                        data: task
+                      };
+                      
+                      return (
+                        <Draggable
+                          key={task.id}
+                          item={taskDragItem}
+                          className="group"
                         >
-                          <div className="flex gap-1 md:gap-0.5">
-                            <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
-                            <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
-                            <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                          <div
+                            className="flex items-center gap-2 py-0.5 px-2 text-xs text-gray-600 cursor-pointer hover:bg-gray-100 rounded transition-all duration-150"
+                            title={task.title}
+                            onClick={() => openTask(task.id)}
+                          >
+                            <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
+                            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                              task.completed ? 'bg-blue-500' : 'border border-gray-300 bg-white'
+                            }`} />
+                            <span className="truncate leading-none flex-1">{task.title}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openTask(task.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-200 transition-all duration-150 touch-manipulation"
+                              title="Edit task"
+                            >
+                              <div className="flex gap-1 md:gap-0.5">
+                                <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                              </div>
+                            </button>
                           </div>
-                        </button>
-                      </div>
-                    ))}
+                        </Draggable>
+                      );
+                    })}
                     {(projectTasks[project.id] || []).length > 5 && (
                       <div className="text-xs text-gray-400 px-2 py-0.5">
                         +{(projectTasks[project.id] || []).length - 5} more...
@@ -929,13 +1029,14 @@ export function Sidebar({
                   </div>
                 )}
                 
-                {/* Collapsed indicator */}
-                {hasItems && settings.showProjectDropdowns && isCollapsed && (
-                  <div className="ml-8 text-xs text-gray-400 pb-1">
-                    {taskCount} item{taskCount !== 1 ? 's' : ''}
-                  </div>
-                )}
-              </div>
+                  {/* Collapsed indicator */}
+                  {hasItems && settings.showProjectDropdowns && isCollapsed && (
+                    <div className="ml-8 text-xs text-gray-400 pb-1">
+                      {taskCount} item{taskCount !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+              </DropZone>
             );
           })}
           </div>

@@ -61,16 +61,27 @@ export async function handleTaskDrop(
   
   const taskId = dragItem.id;
   
+  console.log('handleTaskDrop called:', {
+    taskId,
+    dropZoneType: dropZone.type,
+    targetIndex,
+    targetProjectId,
+    targetAreaId,
+    allTasksCount: allTasks?.length
+  });
+  
   // Calculate new sort order if provided
   let newSortOrder: number | undefined;
   if (typeof targetIndex === 'number' && allTasks) {
     newSortOrder = calculateSortOrder(allTasks, targetIndex, taskId);
+    console.log('Calculated sort order:', newSortOrder);
   }
   
   // Handle different drop targets
   switch (dropZone.type) {
     case 'project':
       // Moving task to a project
+      console.log('Moving task to project:', { taskId, targetProjectId, targetAreaId, newSortOrder });
       await updateTask(taskId, {
         project_id: targetProjectId || null,
         area_id: targetAreaId || null,
@@ -80,6 +91,7 @@ export async function handleTaskDrop(
       
     case 'area':
       // Moving task to an area
+      console.log('Moving task to area:', { taskId, targetAreaId, newSortOrder });
       await updateTask(taskId, {
         area_id: targetAreaId || null,
         project_id: null, // Clear project when moving to area
@@ -89,10 +101,18 @@ export async function handleTaskDrop(
       
     case 'task-list':
       // Reordering within the same list
+      console.log('Reordering task in list:', { taskId, newSortOrder });
       if (newSortOrder) {
         await updateTaskOrder(taskId, newSortOrder);
+      } else {
+        console.warn('No sort order calculated for task reordering');
+        // If no sort order calculated, use current timestamp as fallback
+        await updateTaskOrder(taskId, Date.now());
       }
       break;
+      
+    default:
+      console.warn('Unknown drop zone type:', dropZone.type);
   }
 }
 

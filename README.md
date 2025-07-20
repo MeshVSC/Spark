@@ -28,14 +28,25 @@ A modern, intuitive task management application built with React, TypeScript, an
 - **Real-time Sync**: Instant updates across all devices via Supabase
 - **Calendar Integration**: View tasks alongside your schedule
 - **Task Filtering**: Advanced search and filtering capabilities
-- **Drag & Drop**: Intuitive task and project organization
+- **Comprehensive Drag & Drop**: Intuitive task and project organization across all views
+- **Time Blocking**: Schedule tasks with visual time management
 - **Settings & Customization**: Personalize your workflow
 
+### 🎯 Drag & Drop System
+- **Universal Support**: Drag tasks, projects, areas, and subtasks across all views
+- **Smart Section Boundaries**: Sidebar maintains separate sections for lists and folders
+- **Visual Feedback**: Hover-activated drag handles with smooth animations
+- **Touch-Friendly**: Optimized for mobile and tablet interactions
+- **Intelligent Ordering**: Automatic sort order management in database
+- **Cross-View Compatibility**: Works in main view, sidebar, calendar, and time blocking
+
 ### 🚀 Recent Updates
+- **Complete Drag & Drop Implementation**: Full drag and drop functionality across all components
+- **Enhanced Sidebar Alignment**: Consistent dropdown arrows and task count positioning
+- **Improved Visual Feedback**: Hover-activated 3-dot drag handles for space efficiency
+- **Mobile Optimization**: Touch-friendly drag interactions for all devices
 - **Enhanced Progress Circles**: Blue circular progress indicators with outer rings
-- **Improved Subtask Display**: Counters positioned after task names (e.g., "0 of 2")
 - **Better Visual Hierarchy**: Progress tracking for projects and areas
-- **Refined UI Elements**: Lighter task counts and improved spacing
 - **Keyboard Navigation**: Comprehensive keyboard shortcuts for power users
 
 ## Deployment
@@ -132,7 +143,10 @@ npm run type-check   # Run TypeScript checks
 - Use natural language for dates: "tomorrow", "next week", "friday"
 - Subtasks automatically show completion counts (e.g., "2 of 5")
 - Progress circles show real-time completion status
-- Drag and drop to reorganize tasks and projects
+- **Drag & Drop**: Hover over items to reveal drag handles, then drag to reorganize
+- **Section Boundaries**: Lists and folders maintain separate sidebar sections
+- **Calendar Drag**: Drag tasks between dates in calendar view
+- **Time Blocking**: Drag unscheduled tasks into time slots
 - Use tags to create cross-cutting views of your tasks
 
 ## 🤝 Contributing

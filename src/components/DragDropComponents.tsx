@@ -126,21 +126,15 @@ export function DragHandle({ className = '' }: DragHandleProps) {
   return (
     <div className={`drag-handle ${className}`}>
       <svg 
-        width="12" 
+        width="6" 
         height="12" 
-        viewBox="0 0 12 12" 
+        viewBox="0 0 6 12" 
         className="text-gray-400 hover:text-gray-600 transition-colors"
         fill="currentColor"
       >
-        <circle cx="2" cy="2" r="1" />
-        <circle cx="6" cy="2" r="1" />
-        <circle cx="10" cy="2" r="1" />
-        <circle cx="2" cy="6" r="1" />
-        <circle cx="6" cy="6" r="1" />
-        <circle cx="10" cy="6" r="1" />
-        <circle cx="2" cy="10" r="1" />
-        <circle cx="6" cy="10" r="1" />
-        <circle cx="10" cy="10" r="1" />
+        <circle cx="3" cy="2" r="1" />
+        <circle cx="3" cy="6" r="1" />
+        <circle cx="3" cy="10" r="1" />
       </svg>
     </div>
   );

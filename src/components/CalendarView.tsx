@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { getTasksForCalendar, updateTask } from "../lib/queries/tasks";
+import { Draggable, DragHandle } from "./DragDropComponents";
 import type { Database } from "../lib/supabase";
+import type { DragItem } from "../contexts/DragDropContext";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 
@@ -111,26 +113,40 @@ export function CalendarView({ view, onTaskClick }: CalendarViewProps) {
             {date.getDate()}
           </div>
           <div className="space-y-1">
-            {dayTasks.slice(0, 3).map((task) => (
-              <div
-                key={task.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, task.id)}
-                onClick={() => onTaskClick(task.id)}
-                className={`text-xs p-1 rounded cursor-pointer truncate ${
-                  task.completed 
-                    ? "bg-gray-100 text-gray-500 line-through" 
-                    : task.priority === "high"
-                    ? "bg-red-100 text-red-700"
-                    : task.priority === "medium"
-                    ? "bg-orange-100 text-orange-700"
-                    : "bg-blue-100 text-blue-700"
-                }`}
-                title={task.title}
-              >
-                {task.title}
-              </div>
-            ))}
+            {dayTasks.slice(0, 3).map((task) => {
+              const taskDragItem: DragItem = {
+                id: task.id,
+                type: 'task',
+                data: task
+              };
+              
+              return (
+                <Draggable
+                  key={task.id}
+                  item={taskDragItem}
+                  className={`group text-xs p-1 rounded cursor-pointer truncate ${
+                    task.completed 
+                      ? "bg-gray-100 text-gray-500 line-through" 
+                      : task.priority === "high"
+                      ? "bg-red-100 text-red-700"
+                      : task.priority === "medium"
+                      ? "bg-orange-100 text-orange-700"
+                      : "bg-blue-100 text-blue-700"
+                  }`}
+                  title={task.title}
+                >
+                  <div className="flex items-center gap-1">
+                    <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0" />
+                    <span 
+                      className="flex-1 truncate"
+                      onClick={() => onTaskClick(task.id)}
+                    >
+                      {task.title}
+                    </span>
+                  </div>
+                </Draggable>
+              );
+            })}
             {dayTasks.length > 3 && (
               <div className="text-xs text-gray-500">
                 +{dayTasks.length - 3} more
@@ -179,30 +195,44 @@ export function CalendarView({ view, onTaskClick }: CalendarViewProps) {
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, date)}
           >
-            {dayTasks.map((task) => (
-              <div
-                key={task.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, task.id)}
-                onClick={() => onTaskClick(task.id)}
-                className={`p-2 rounded cursor-pointer text-sm ${
-                  task.completed 
-                    ? "bg-gray-100 text-gray-500 line-through" 
-                    : task.priority === "high"
-                    ? "bg-red-100 text-red-700 border-l-4 border-red-400"
-                    : task.priority === "medium"
-                    ? "bg-orange-100 text-orange-700 border-l-4 border-orange-400"
-                    : "bg-blue-100 text-blue-700 border-l-4 border-blue-400"
-                }`}
-              >
-                <div className="font-medium">{task.title}</div>
-                {task.duration && (
-                  <div className="text-xs opacity-75 mt-1">
-                    {formatDuration(task.duration)}
+            {dayTasks.map((task) => {
+              const taskDragItem: DragItem = {
+                id: task.id,
+                type: 'task',
+                data: task
+              };
+              
+              return (
+                <Draggable
+                  key={task.id}
+                  item={taskDragItem}
+                  className={`group p-2 rounded cursor-pointer text-sm ${
+                    task.completed 
+                      ? "bg-gray-100 text-gray-500 line-through" 
+                      : task.priority === "high"
+                      ? "bg-red-100 text-red-700 border-l-4 border-red-400"
+                      : task.priority === "medium"
+                      ? "bg-orange-100 text-orange-700 border-l-4 border-orange-400"
+                      : "bg-blue-100 text-blue-700 border-l-4 border-blue-400"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 mt-1 flex-shrink-0" />
+                    <div 
+                      className="flex-1 min-w-0"
+                      onClick={() => onTaskClick(task.id)}
+                    >
+                      <div className="font-medium">{task.title}</div>
+                      {task.duration && (
+                        <div className="text-xs opacity-75 mt-1">
+                          {formatDuration(task.duration)}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+                </Draggable>
+              );
+            })}
           </div>
         </div>
       );

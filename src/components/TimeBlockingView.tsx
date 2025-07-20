@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { getTasksForDate, subscribeToTasks } from "../lib/queries/tasks";
 import { createTimeBlock, updateTimeBlock, deleteTimeBlock, getTimeBlocks, subscribeToTimeBlocks } from "../lib/queries/timeBlocks";
+import { Draggable, DragHandle } from "./DragDropComponents";
 import type { Database } from "../lib/supabase";
+import type { DragItem } from "../contexts/DragDropContext";
 
 type TimeBlock = Database['public']['Tables']['time_blocks']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'];
@@ -199,33 +201,45 @@ export function TimeBlockingView() {
                 </button>
 
                 {/* Time blocks */}
-                {blocks.map((block) => (
-                  <div
-                    key={block.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, block.id)}
-                    className="absolute inset-x-2 top-1 bottom-1 rounded p-2 cursor-move shadow-sm border-l-4"
-                    style={{ 
-                      backgroundColor: block.color + "20",
-                      borderLeftColor: block.color 
-                    }}
-                  >
-                    <div className="text-sm font-medium truncate">
-                      {block.title}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {new Date(block.start_time).toLocaleTimeString('en-US', { 
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true 
-                      })} - {new Date(block.end_time).toLocaleTimeString('en-US', { 
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true 
-                      })}
-                    </div>
-                  </div>
-                ))}
+                {blocks.map((block) => {
+                  const blockDragItem: DragItem = {
+                    id: block.id,
+                    type: 'subtask', // Using subtask type since time blocks are similar
+                    data: block
+                  };
+                  
+                  return (
+                    <Draggable
+                      key={block.id}
+                      item={blockDragItem}
+                      className="absolute inset-x-2 top-1 bottom-1 rounded p-2 cursor-move shadow-sm border-l-4 group"
+                      style={{ 
+                        backgroundColor: block.color + "20",
+                        borderLeftColor: block.color 
+                      }}
+                    >
+                      <div className="flex items-start gap-2 h-full">
+                        <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0 mt-1" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">
+                            {block.title}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {new Date(block.start_time).toLocaleTimeString('en-US', { 
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true 
+                            })} - {new Date(block.end_time).toLocaleTimeString('en-US', { 
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true 
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </Draggable>
+                  );
+                })}
               </div>
             );
           })}
@@ -239,20 +253,33 @@ export function TimeBlockingView() {
           <div className="space-y-2">
             {tasks
               .filter(task => !task.scheduled_date && !task.completed)
-              .map((task) => (
-                <div
-                  key={task.id}
-                  draggable
-                  className="p-2 bg-white rounded border cursor-move hover:shadow-sm"
-                >
-                  <div className="text-sm font-medium">{task.title}</div>
-                  {task.duration && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Est. {formatDuration(task.duration)}
+              .map((task) => {
+                const taskDragItem: DragItem = {
+                  id: task.id,
+                  type: 'task',
+                  data: task
+                };
+                
+                return (
+                  <Draggable
+                    key={task.id}
+                    item={taskDragItem}
+                    className="p-2 bg-white rounded border cursor-move hover:shadow-sm group"
+                  >
+                    <div className="flex items-start gap-2">
+                      <DragHandle className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0 mt-1" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium">{task.title}</div>
+                        {task.duration && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Est. {formatDuration(task.duration)}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  </Draggable>
+                );
+              })}
           </div>
         </div>
       </div>

@@ -270,9 +270,19 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
   );
 
   // Handle drop events
-  const handleTaskDrop = async (dragItem: DragItem, dropZone: DropZoneType) => {
+  const handleTaskDrop = async (dragItem: DragItem, dropZone: DropZoneType, targetIndex?: number) => {
     try {
+      console.log('TaskList handleTaskDrop:', { 
+        dragItem, 
+        dropZone, 
+        targetIndex, 
+        projectId, 
+        areaId,
+        allTasksCount: allTasks.length 
+      });
+      
       await handleDrop(dragItem, dropZone, {
+        targetIndex,
         allTasks: allTasks.map(t => ({ id: t.id, sort_order: t.sort_order })),
         targetProjectId: projectId || undefined,
         targetAreaId: areaId || undefined,
@@ -280,6 +290,8 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
       await refresh(); // Refresh to show the updated order
     } catch (error) {
       console.error('Failed to handle task drop:', error);
+      // Refresh even on error to restore UI state
+      await refresh();
     }
   };
 
