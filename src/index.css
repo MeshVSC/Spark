@@ -81,7 +81,7 @@ body {
 }
 
 .things-checkbox {
-  @apply w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-150 cursor-pointer;
+  @apply w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-150 cursor-pointer;
   border-color: var(--things-gray-300);
 }
 
@@ -276,4 +276,20 @@ body {
 
 *::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
+}
+
+/* Mobile touch improvements */
+@media (max-width: 768px) {
+  .group:hover .opacity-0 {
+    opacity: 1 !important;
+  }
+  
+  /* Make 3-dot menus always visible on mobile */
+  .group .opacity-0.touch-manipulation {
+    opacity: 0.6 !important;
+  }
+  
+  .group .opacity-0.touch-manipulation:hover {
+    opacity: 1 !important;
+  }
 }

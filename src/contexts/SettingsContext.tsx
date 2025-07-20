@@ -10,6 +10,10 @@ interface Settings {
   smartTimeGrouping: boolean;
   preserveWindowWidth: boolean;
   showEmptyTimePeriods: boolean;
+  showCalendarView: boolean;
+  showTimeBlockingView: boolean;
+  showFoldersView: boolean;
+  showAllProjectsView: boolean;
 }
 
 const defaultSettings: Settings = {
@@ -22,6 +26,10 @@ const defaultSettings: Settings = {
   smartTimeGrouping: false,
   preserveWindowWidth: true,
   showEmptyTimePeriods: false,
+  showCalendarView: true,
+  showTimeBlockingView: true,
+  showFoldersView: true,
+  showAllProjectsView: true,
 };
 
 interface SettingsContextType {

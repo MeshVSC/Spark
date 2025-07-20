@@ -65,16 +65,9 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps
   };
 
   const handleSubtaskCreated = async () => {
-    try {
-      // Manually refresh subtasks to ensure they're up to date
-      const updatedSubtasks = await getSubtasks(task.id);
-      setSubtasks(updatedSubtasks);
-      setShowSubtasks(true);
-    } catch (error) {
-      console.error("Failed to refresh subtasks:", error);
-      // Still show subtasks section even if refresh fails
-      setShowSubtasks(true);
-    }
+    // The real-time subscription will automatically update subtasks
+    // so we just need to show the subtasks section
+    setShowSubtasks(true);
   };
 
   const completedSubtasks = subtasks.filter(s => s.completed).length;

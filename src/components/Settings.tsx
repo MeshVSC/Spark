@@ -293,6 +293,76 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                   </div>
                 </div>
               </div>
+
+              <div className="space-y-4">
+                <div className="text-sm font-medium mb-4" style={{ color: 'var(--things-gray-700)' }}>
+                  Field Views Visibility
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CustomCheckbox 
+                    checked={settings.showCalendarView} 
+                    onChange={(checked) => updateSetting('showCalendarView', checked)}
+                    className="mt-1" 
+                  />
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
+                      Show Calendar view
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--things-gray-500)' }}>
+                      Display Calendar option in sidebar
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CustomCheckbox 
+                    checked={settings.showTimeBlockingView} 
+                    onChange={(checked) => updateSetting('showTimeBlockingView', checked)}
+                    className="mt-1" 
+                  />
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
+                      Show Time Blocking view
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--things-gray-500)' }}>
+                      Display Time Blocking option in sidebar
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CustomCheckbox 
+                    checked={settings.showFoldersView} 
+                    onChange={(checked) => updateSetting('showFoldersView', checked)}
+                    className="mt-1" 
+                  />
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
+                      Show Folders view
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--things-gray-500)' }}>
+                      Display Folders option in sidebar
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CustomCheckbox 
+                    checked={settings.showAllProjectsView} 
+                    onChange={(checked) => updateSetting('showAllProjectsView', checked)}
+                    className="mt-1" 
+                  />
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--things-gray-700)' }}>
+                      Show All Projects view
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--things-gray-500)' }}>
+                      Display All Projects option in sidebar
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getSubtasks, toggleSubtask, deleteSubtask, subscribeToSubtasks } from "../lib/queries/subtasks";
+import { CustomCheckbox } from "./CustomCheckbox";
 import type { Database } from "../lib/supabase";
 
 type Subtask = Database['public']['Tables']['subtasks']['Row'];
@@ -50,23 +51,10 @@ export function SubtaskList({ taskId }: SubtaskListProps) {
     <div className="space-y-2">
       {subtasks.map((subtask) => (
         <div key={subtask.id} className="flex items-center gap-3 group">
-          <button
-            onClick={() => handleToggle(subtask.id)}
-            className={`things-checkbox ${subtask.completed ? 'completed' : ''}`}
-            style={{ transform: 'scale(0.8)' }}
-          >
-            {subtask.completed && (
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 6L4.5 8.5L10 3"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </button>
+          <CustomCheckbox 
+            checked={subtask.completed}
+            onChange={() => handleToggle(subtask.id)}
+          />
           
           <span className={`flex-1 subtask-title ${
             subtask.completed ? "line-through text-gray-500" : ""

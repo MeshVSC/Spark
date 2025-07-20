@@ -138,7 +138,7 @@ type Area = Database['public']['Tables']['areas']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row']; // Single declaration
 
 export function SparkApp() {
-  const [currentView, setCurrentView] = useState<"inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking">("inbox");
+  const [currentView, setCurrentView] = useState<"inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects">("inbox");
   const [calendarViewType, setCalendarViewType] = useState<"month" | "week">("month");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
@@ -151,7 +151,13 @@ export function SparkApp() {
   const [showSearch, setShowSearch] = useState(false);
   const [showRecurringForm, setShowRecurringForm] = useState(false);
   const { selectedTaskId, openTask, closeTask } = useTaskNavigation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    // Default to collapsed on mobile, expanded on desktop
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
   const [taskFilters, setTaskFilters] = useState<{
     priority?: "low" | "medium" | "high";
     tags?: string[];
@@ -170,6 +176,22 @@ export function SparkApp() {
     getCurrentUser().then(setUser);
     getTaskStats().then(setTaskStats).catch(() => setTaskStats(null));
   }, []);
+
+  // Handle responsive sidebar behavior
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile && !sidebarCollapsed) {
+        // Don't auto-collapse on mobile, let user control it
+      } else if (!isMobile && sidebarCollapsed && window.innerWidth >= 1024) {
+        // Auto-expand on larger screens
+        setSidebarCollapsed(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [sidebarCollapsed]);
 
 
   // Keyboard shortcuts
@@ -219,6 +241,8 @@ export function SparkApp() {
     }
     if (currentView === "calendar") return "Calendar";
     if (currentView === "timeblocking") return "Time Blocking";
+    if (currentView === "folders") return "Folders";
+    if (currentView === "all-projects") return "All Projects";
     return currentView.charAt(0).toUpperCase() + currentView.slice(1);
   };
 
@@ -257,6 +281,10 @@ export function SparkApp() {
         return `${calendarViewType} view`;
       case "timeblocking":
         return "Schedule your day";
+      case "folders":
+        return `${areas.length} folders`;
+      case "all-projects":
+        return `${projects.length} projects`;
       default:
         return "";
     }
@@ -318,8 +346,20 @@ export function SparkApp() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col bg-white md:ml-0 ml-0">
         {/* Header */}
-        <div className="p-6 pb-2">
+        <div className="px-4 pt-6 pb-2">
           <div className="flex items-center gap-3">
+            {/* Mobile hamburger menu */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="md:hidden p-2 rounded hover:bg-gray-100 transition-colors"
+              title="Toggle sidebar"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
             {/* Progress circle for selected project */}
             {selectedProjectId && (
               <ProgressCircle 
@@ -369,7 +409,7 @@ export function SparkApp() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-auto bg-white">
-          <div className="p-6">
+          <div className="px-4 py-6">
             {currentView === "calendar" ? (
               <CalendarView 
                 view={calendarViewType} 

@@ -97,8 +97,8 @@ type Task = Database['public']['Tables']['tasks']['Row'];
 type TaskStats = Awaited<ReturnType<typeof getTaskStats>>;
 
 interface SidebarProps {
-  currentView: "inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking";
-  onViewChange: (view: "inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking") => void;
+  currentView: "inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects";
+  onViewChange: (view: "inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects") => void;
   selectedProjectId: string | null;
   selectedAreaId: string | null;
   onProjectSelect: (projectId: string) => void;
@@ -389,7 +389,21 @@ export function Sidebar({
   );
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} flex flex-col transition-all duration-300 md:relative fixed inset-y-0 left-0 z-50 md:z-auto ${collapsed ? 'md:w-16' : 'w-full md:w-64'}`} style={{ background: '#F5F5F5' }}>
+    <>
+      {/* Mobile overlay backdrop */}
+      {!collapsed && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-20 z-40 md:hidden"
+          onClick={onToggleCollapse}
+        />
+      )}
+      
+      <div className={`
+        ${collapsed ? 'w-16' : 'w-80 md:w-64'} 
+        flex flex-col transition-all duration-300 
+        md:relative fixed inset-y-0 left-0 z-50 md:z-auto
+        ${collapsed ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}
+      `} style={{ background: '#F5F5F5' }}>
       {/* Collapse button */}
       <div className="flex items-center justify-between p-4">
         {!collapsed && <h2 className="text-2xl font-bold text-gray-900">Spark</h2>}
@@ -411,31 +425,42 @@ export function Sidebar({
           {views.filter(view => view.id === 'inbox' || view.id === 'completed').map((view) => (
             <div
               key={view.id}
-              className={`w-full ${
+              className={`w-full group ${
                 currentView === view.id && !selectedProjectId && !selectedAreaId
                   ? 'bg-gray-300'
                   : 'hover:bg-gray-200'
               } transition-all duration-150`}
             >
-              <button
-                onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal w-full text-gray-700 ${
-                  currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
-                }`}
-                title={collapsed ? view.name : undefined}
-              >
-                {view.icon}
+              <div className="flex items-center w-full">
+                <button
+                  onClick={() => onViewChange(view.id)}
+                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
+                    currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
+                  }`}
+                  title={collapsed ? view.name : undefined}
+                >
+                  {view.icon}
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 text-left">{view.name}</span>
+                      {settings.showViewCounts && view.count > 0 && (
+                        <span className="text-xs text-gray-400 font-medium">
+                          {view.count}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </button>
                 {!collapsed && (
-                  <>
-                    <span className="flex-1 text-left">{view.name}</span>
-                    {settings.showViewCounts && view.count > 0 && (
-                      <span className="text-xs text-gray-400 font-medium">
-                        {view.count}
-                      </span>
-                    )}
-                  </>
+                  <button className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-2 touch-manipulation">
+                    <div className="flex gap-1 md:gap-0.5">
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                    </div>
+                  </button>
                 )}
-              </button>
+              </div>
             </div>
           ))}
         </div>
@@ -445,81 +470,136 @@ export function Sidebar({
           {views.filter(view => ['today', 'upcoming', 'someday'].includes(view.id)).map((view) => (
             <div
               key={view.id}
-              className={`w-full ${
+              className={`w-full group ${
                 currentView === view.id && !selectedProjectId && !selectedAreaId
                   ? 'bg-gray-300'
                   : 'hover:bg-gray-200'
               } transition-all duration-150`}
             >
-              <button
-                onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal w-full text-gray-700 ${
-                  currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
-                }`}
-                title={collapsed ? view.name : undefined}
-              >
-                {view.icon}
+              <div className="flex items-center w-full">
+                <button
+                  onClick={() => onViewChange(view.id)}
+                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
+                    currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
+                  }`}
+                  title={collapsed ? view.name : undefined}
+                >
+                  {view.icon}
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 text-left">{view.name}</span>
+                      {settings.showViewCounts && view.count > 0 && (
+                        <span className="text-xs text-gray-400 font-medium">
+                          {view.count}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </button>
                 {!collapsed && (
-                  <>
-                    <span className="flex-1 text-left">{view.name}</span>
-                    {settings.showViewCounts && view.count > 0 && (
-                      <span className="text-xs text-gray-400 font-medium">
-                        {view.count}
-                      </span>
-                    )}
-                  </>
+                  <button className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-2 touch-manipulation">
+                    <div className="flex gap-1 md:gap-0.5">
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                    </div>
+                  </button>
                 )}
-              </button>
+              </div>
             </div>
           ))}
         </div>
 
         {/* Group 3: Calendar and Time Blocking - close together */}
         <div className="space-y-0" style={{ marginBottom: '12px' }}>
-          {calendarViews.filter(view => ['calendar', 'timeblocking'].includes(view.id)).map((view) => (
+          {calendarViews.filter(view => {
+            if (view.id === 'calendar' && !settings.showCalendarView) return false;
+            if (view.id === 'timeblocking' && !settings.showTimeBlockingView) return false;
+            return ['calendar', 'timeblocking'].includes(view.id);
+          }).map((view) => (
             <div
               key={view.id}
-              className={`w-full ${
+              className={`w-full group ${
                 currentView === view.id
                   ? 'bg-gray-300'
                   : 'hover:bg-gray-200'
               } transition-all duration-150`}
             >
-              <button
-                onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal w-full text-gray-700 ${
-                  currentView === view.id ? 'text-gray-900' : ''
-                }`}
-                title={collapsed ? view.name : undefined}
-              >
-                {view.icon}
-                {!collapsed && <span className="flex-1 text-left">{view.name}</span>}
-              </button>
+              <div className="flex items-center w-full">
+                <button
+                  onClick={() => onViewChange(view.id)}
+                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
+                    currentView === view.id ? 'text-gray-900' : ''
+                  }`}
+                  title={collapsed ? view.name : undefined}
+                >
+                  {view.icon}
+                  {!collapsed && <span className="flex-1 text-left">{view.name}</span>}
+                </button>
+                {!collapsed && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSettings(true);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-2 touch-manipulation"
+                    title="View settings"
+                  >
+                    <div className="flex gap-1 md:gap-0.5">
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                    </div>
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
 
         {/* Group 4: Folders and All Projects - close together */}
         <div className="space-y-0">
-          {calendarViews.filter(view => ['folders', 'all-projects'].includes(view.id)).map((view) => (
+          {calendarViews.filter(view => {
+            if (view.id === 'folders' && !settings.showFoldersView) return false;
+            if (view.id === 'all-projects' && !settings.showAllProjectsView) return false;
+            return ['folders', 'all-projects'].includes(view.id);
+          }).map((view) => (
             <div
               key={view.id}
-              className={`w-full ${
-                currentView === view.id
+              className={`w-full group ${
+                currentView === view.id && !selectedProjectId && !selectedAreaId
                   ? 'bg-gray-300'
                   : 'hover:bg-gray-200'
               } transition-all duration-150`}
             >
-              <button
-                onClick={() => onViewChange(view.id)}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal w-full text-gray-700 ${
-                  currentView === view.id ? 'text-gray-900' : ''
-                }`}
-                title={collapsed ? view.name : undefined}
-              >
-                {view.icon}
-                {!collapsed && <span className="flex-1 text-left">{view.name}</span>}
-              </button>
+              <div className="flex items-center w-full">
+                <button
+                  onClick={() => onViewChange(view.id as any)}
+                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
+                    currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
+                  }`}
+                  title={collapsed ? view.name : undefined}
+                >
+                  {view.icon}
+                  {!collapsed && <span className="flex-1 text-left">{view.name}</span>}
+                </button>
+                {!collapsed && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSettings(true);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-2 touch-manipulation"
+                    title="View settings"
+                  >
+                    <div className="flex gap-1 md:gap-0.5">
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                    </div>
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -618,7 +698,7 @@ export function Sidebar({
                   return (
                     <div key={project.id} className="pl-0.5" style={{ marginBottom: '0px', marginTop: index === 0 ? '6px' : '0px' }}>
                       <div 
-                        className={`flex items-center w-full ${
+                        className={`group flex items-center w-full ${
                           selectedProjectId === project.id 
                             ? 'bg-gray-300' 
                             : 'hover:bg-gray-200'
@@ -654,6 +734,18 @@ export function Sidebar({
                           )}
                         </div>
                         
+                        {/* 3-dot menu for projects */}
+                        <button
+                          onClick={() => onProjectEdit(project.id)}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-2"
+                        >
+                          <div className="flex gap-0.5">
+                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                          </div>
+                        </button>
+                        
                         {/* Collapse/expand arrow - moved to right */}
                         {settings.showProjectDropdowns && hasItems && (
                           <button
@@ -677,17 +769,32 @@ export function Sidebar({
                       
                       {/* Tasks shown when expanded */}
                       {hasItems && settings.showProjectDropdowns && !isCollapsed && (
-                        <div className="ml-5 border-l border-gray-200 pl-2 space-y-0">
+                        <div className="ml-5 pl-2 space-y-0">
                           {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
                             <div
                               key={task.id}
-                              className="flex items-center gap-2 py-0.5 text-xs text-gray-600 cursor-pointer"
+                              className="group flex items-center gap-2 py-0.5 px-2 text-xs text-gray-600 cursor-pointer hover:bg-gray-100 rounded transition-all duration-150"
                               onClick={() => openTask(task.id)}
+                              title={task.title}
                             >
                               <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
-                              <span className={`truncate leading-none ${task.completed ? 'line-through' : ''}`}>
+                              <span className={`truncate leading-none flex-1 ${task.completed ? 'line-through' : ''}`}>
                                 {task.title}
                               </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openTask(task.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-200 transition-all duration-150 touch-manipulation"
+                                title="Edit task"
+                              >
+                                <div className="flex gap-1 md:gap-0.5">
+                                  <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                  <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                  <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                                </div>
+                              </button>
                             </div>
                           ))}
                           {(projectTasks[project.id]?.length || 0) > 5 && (
@@ -715,7 +822,7 @@ export function Sidebar({
             return (
               <div key={project.id} style={{ marginBottom: '0px' }}>
                 <div 
-                  className={`flex items-center w-full ${
+                  className={`group flex items-center w-full ${
                     selectedProjectId === project.id 
                       ? 'bg-gray-300' 
                       : 'hover:bg-gray-200'
@@ -751,6 +858,18 @@ export function Sidebar({
                     )}
                   </div>
                   
+                  {/* 3-dot menu for projects */}
+                  <button
+                    onClick={() => onProjectEdit(project.id)}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-300 transition-all duration-150 mr-2"
+                  >
+                    <div className="flex gap-0.5">
+                      <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                      <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    </div>
+                  </button>
+                  
                   {/* Collapse/expand arrow - moved to right */}
                   {settings.showProjectDropdowns && hasItems && (
                     <button
@@ -774,20 +893,32 @@ export function Sidebar({
                 
                 {/* Tasks shown when expanded */}
                 {hasItems && settings.showProjectDropdowns && !isCollapsed && (
-                  <div className="ml-5 border-l border-gray-200 pl-2 space-y-0">
+                  <div className="ml-5 pl-2 space-y-0">
                     {(projectTasks[project.id] || []).slice(0, 5).map((task) => (
                       <div
                         key={task.id}
-                        className="text-xs text-gray-600 py-0.5 px-2 hover:bg-gray-100 rounded cursor-pointer"
+                        className="group flex items-center gap-2 py-0.5 px-2 text-xs text-gray-600 cursor-pointer hover:bg-gray-100 rounded transition-all duration-150"
                         title={task.title}
                         onClick={() => openTask(task.id)}
                       >
-                        <div className="flex items-center gap-2">
-                          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                            task.completed ? 'bg-blue-500' : 'border border-gray-300 bg-white'
-                          }`} />
-                          <span className="truncate leading-none">{task.title}</span>
-                        </div>
+                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                          task.completed ? 'bg-blue-500' : 'border border-gray-300 bg-white'
+                        }`} />
+                        <span className="truncate leading-none flex-1">{task.title}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openTask(task.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 md:p-1 rounded hover:bg-gray-200 transition-all duration-150 touch-manipulation"
+                          title="Edit task"
+                        >
+                          <div className="flex gap-1 md:gap-0.5">
+                            <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                            <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                            <div className="w-1.5 h-1.5 md:w-1 md:h-1 bg-gray-400 rounded-full"></div>
+                          </div>
+                        </button>
                       </div>
                     ))}
                     {(projectTasks[project.id] || []).length > 5 && (
@@ -848,6 +979,8 @@ export function Sidebar({
       </div>
 
       <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
-    </div>
+      </div>
+      
+    </>
   );
 }
