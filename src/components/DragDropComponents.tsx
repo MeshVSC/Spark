@@ -69,8 +69,13 @@ function InsertionIndicator({ position, container, show }: InsertionIndicatorPro
   let topPosition = 0;
   
   if (position === 0) {
-    // Insert at the beginning
-    topPosition = 0;
+    // Insert at the beginning - use first element's top or container top
+    const firstElement = draggableElements[0] as HTMLElement;
+    if (firstElement) {
+      const containerRect = container.getBoundingClientRect();
+      const firstRect = firstElement.getBoundingClientRect();
+      topPosition = Math.max(0, firstRect.top - containerRect.top);
+    }
   } else if (position >= draggableElements.length) {
     // Insert at the end
     const lastElement = draggableElements[draggableElements.length - 1] as HTMLElement;
@@ -85,17 +90,15 @@ function InsertionIndicator({ position, container, show }: InsertionIndicatorPro
     if (targetElement) {
       const containerRect = container.getBoundingClientRect();
       const targetRect = targetElement.getBoundingClientRect();
-      topPosition = targetRect.top - containerRect.top;
+      topPosition = Math.max(0, targetRect.top - containerRect.top);
     }
   }
   
   return (
     <div 
-      className="absolute left-0 right-0 h-0.5 bg-blue-500 rounded-full z-10 shadow-lg"
-      style={{ top: topPosition - 1 }}
-    >
-      <div className="absolute left-2 -top-1 w-2 h-2 bg-blue-500 rounded-full"></div>
-    </div>
+      className="absolute left-0 right-0 h-px bg-gray-400 z-10"
+      style={{ top: topPosition }}
+    />
   );
 }
 
@@ -127,21 +130,23 @@ export function DropZone({
     
     if (draggableElements.length > 0) {
       const mouseY = e.clientY;
-      let closestIndex = 0;
-      let closestDistance = Infinity;
+      let insertionIndex = 0;
       
-      draggableElements.forEach((element, index) => {
+      // Find the correct insertion point by comparing with each element
+      for (let i = 0; i < draggableElements.length; i++) {
+        const element = draggableElements[i] as HTMLElement;
         const rect = element.getBoundingClientRect();
-        const elementCenterY = rect.top + rect.height / 2;
-        const distance = Math.abs(mouseY - elementCenterY);
+        const elementMiddle = rect.top + rect.height / 2;
         
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = mouseY < elementCenterY ? index : index + 1;
+        if (mouseY < elementMiddle) {
+          insertionIndex = i;
+          break;
+        } else {
+          insertionIndex = i + 1;
         }
-      });
+      }
       
-      setInsertionIndex(closestIndex);
+      setInsertionIndex(insertionIndex);
     } else {
       setInsertionIndex(0);
     }
@@ -182,11 +187,7 @@ export function DropZone({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`
-        ${className}
-        ${isValidDropTarget && isDropTarget && showDropIndicator ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50' : ''}
-        ${isValidDropTarget ? 'transition-all duration-150' : ''}
-      `}
+      className={`${className} relative`}
     >
       {children}
       
@@ -197,11 +198,6 @@ export function DropZone({
           container={dropContainer}
           show={true}
         />
-      )}
-      
-      {/* Drop indicator */}
-      {isValidDropTarget && isDropTarget && showDropIndicator && !insertionIndex && (
-        <div className="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg pointer-events-none opacity-75" />
       )}
     </div>
   );
