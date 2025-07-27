@@ -157,10 +157,8 @@ export function Sidebar({
         targetProjectId: dropZone.id.startsWith('project-') ? dropZone.id.replace('project-', '') : undefined,
         targetAreaId: dropZone.id.startsWith('area-') ? dropZone.id.replace('area-', '') : undefined,
       });
-      // Refresh data after successful drop
-      setTimeout(() => {
-        window.location.reload(); // For now, refresh the page to show updates
-      }, 100);
+      // Data will be updated via real-time subscriptions
+      console.log('Drop operation completed successfully');
     } catch (error) {
       console.error('Failed to handle sidebar drop:', error);
     }
