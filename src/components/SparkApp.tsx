@@ -17,6 +17,7 @@ import { TaskFilters } from "./TaskFilters";
 import { CalendarView } from "./CalendarView";
 import { TimeBlockingView } from "./TimeBlockingView";
 import { RecurringTaskForm } from "./RecurringTaskForm";
+import { SubtaskFormUnified } from "./SubtaskFormUnified";
 import { TaskEditForm } from "./TaskEditForm"; // Import TaskEditForm
 import { useTaskNavigation } from "../hooks/useTaskNavigation";
 import { MockupDataButton } from "./MockupDataButton";
@@ -139,7 +140,7 @@ type Area = Database['public']['Tables']['areas']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row']; // Single declaration
 
 export function SparkApp() {
-  const [currentView, setCurrentView] = useState<"inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects">("inbox");
+  const [currentView, setCurrentView] = useState<"sparks" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects">("sparks");
   const [calendarViewType, setCalendarViewType] = useState<"month" | "week">("month");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
@@ -151,6 +152,7 @@ export function SparkApp() {
   const [showQuickEntry, setShowQuickEntry] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showRecurringForm, setShowRecurringForm] = useState(false);
+  const [showSubtaskForm, setShowSubtaskForm] = useState(false);
   const { selectedTaskId, openTask, closeTask } = useTaskNavigation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Default to collapsed on mobile, expanded on desktop
@@ -198,13 +200,23 @@ export function SparkApp() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl + N for new task
-      if ((e.metaKey || e.ctrlKey) && e.key === 'n' && !e.shiftKey) {
+      // Cmd/Ctrl + T for new task
+      if ((e.metaKey || e.ctrlKey) && e.key === 't') {
         e.preventDefault();
         setShowTaskForm(true);
       }
-      // Cmd/Ctrl + Shift + N for quick entry
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'N') {
+      // Cmd/Ctrl + S for new subtask
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        setShowSubtaskForm(true);
+      }
+      // Cmd/Ctrl + P for new project
+      if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+        e.preventDefault();
+        setShowProjectForm(true);
+      }
+      // Cmd/Ctrl + Q for spark  
+      if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
         e.preventDefault();
         setShowQuickEntry(true);
       }
@@ -223,6 +235,7 @@ export function SparkApp() {
         setShowQuickEntry(false);
         setShowSearch(false);
         setShowRecurringForm(false);
+        setShowSubtaskForm(false);
         closeTask(); // Close TaskEditForm on escape
       }
     };
@@ -238,7 +251,7 @@ export function SparkApp() {
     }
     if (selectedAreaId) {
       const area = areas.find(a => a.id === selectedAreaId);
-      return area ? area.name : "Area";
+      return area ? area.name : "Folder";
     }
     if (currentView === "calendar") return "Calendar";
     if (currentView === "timeblocking") return "Time Blocking";
@@ -558,22 +571,22 @@ export function SparkApp() {
                 </svg>
               </button>
 
-              {/* Option 1: Lightning Arrow */}
+              {/* Subtask */}
               <button
-                onClick={() => setShowQuickEntry(true)}
+                onClick={() => setShowSubtaskForm(true)}
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
-                title="Option 1: Lightning Arrow"
+                title="New Subtask (⌘S)"
               >
-                <svg width="18" height="18" viewBox="0 0 352.169 352.169" fill="currentColor" stroke="currentColor" strokeWidth="12" className="text-gray-600">
-                  <polygon points="245.281,293.778 177.643,323.046 245.821,171.551 249.712,162.961 129.725,162.961 211.378,8.437 195.394,0 99.701,181.032 221.718,181.032 160.487,317.132 130.764,248.467 114.157,255.637 155.951,352.169 252.469,310.388"/>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
               </button>
-
               
+              {/* Task */}
               <button
                 onClick={() => setShowTaskForm(true)}
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
-                title="New To-Do (⌘N)"
+                title="New Task (⌘T)"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -581,15 +594,27 @@ export function SparkApp() {
                 </svg>
               </button>
               
+              {/* Project */}
               <button
                 onClick={() => setShowProjectForm(true)}
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
-                title="New Project"
+                title="New Project (⌘P)"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="8" x2="12" y2="16"></line>
                   <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+              </button>
+
+              {/* Spark */}
+              <button
+                onClick={() => setShowQuickEntry(true)}
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                title="Spark (⌘Q)"
+              >
+                <svg width="18" height="18" viewBox="0 0 352.169 352.169" fill="currentColor" stroke="currentColor" strokeWidth="12" className="text-gray-600">
+                  <polygon points="245.281,293.778 177.643,323.046 245.821,171.551 249.712,162.961 129.725,162.961 211.378,8.437 195.394,0 99.701,181.032 221.718,181.032 160.487,317.132 130.764,248.467 114.157,255.637 155.951,352.169 252.469,310.388"/>
                 </svg>
               </button>
               
@@ -647,6 +672,12 @@ export function SparkApp() {
           isVisible={showRecurringForm}
           onClose={() => setShowRecurringForm(false)}
           taskId={selectedTaskId || undefined}
+        />
+      )}
+
+      {showSubtaskForm && (
+        <SubtaskFormUnified
+          onClose={() => setShowSubtaskForm(false)}
         />
       )}
 

@@ -13,9 +13,15 @@ interface QuickEntryProps {
 export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntryProps) {
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [priority, setPriority] = useState<"low" | "medium" | "high" | "">("");
+  const [tags, setTags] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showScheduledPicker, setShowScheduledPicker] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentScheduledDate, setCurrentScheduledDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
+  const [scheduledSearchQuery, setScheduledSearchQuery] = useState("");
   const modalRef = useRef<HTMLDivElement>(null);
   const { refresh, addOptimistic, removeOptimistic } = useTaskStore();
 
@@ -120,6 +126,9 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
       project_id: projectId,
       area_id: areaId,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      scheduled_date: scheduledDate ? new Date(scheduledDate).toISOString() : null,
+      priority: priority || null,
+      tags: tags.trim() ? tags.split(",").map((tag: string) => tag.trim()).filter(Boolean) : [],
     };
 
     // Add optimistically first
@@ -128,6 +137,11 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
     // Clear form and close immediately for better UX
     setTitle("");
     setDueDate("");
+    setScheduledDate("");
+    setPriority("");
+    setTags("");
+    setSearchQuery("");
+    setScheduledSearchQuery("");
     onClose();
 
     try {
@@ -179,9 +193,39 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={handleKeyDown}
             className="w-full px-0 py-2 text-base border-none outline-none placeholder-gray-400"
-            placeholder="New To-Do"
+            placeholder="Quick task..."
             autoFocus
           />
+          
+          {/* Priority, Tags, and Scheduled Date */}
+          <div className="space-y-2 mt-2">
+            <div className="flex gap-2">
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as any)}
+                className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600 bg-white"
+              >
+                <option value="">Priority</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+              <input
+                type="date"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
+                title="Scheduled date"
+              />
+            </div>
+            <input
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className="w-full text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
+              placeholder="Tags (work, urgent...)"
+            />
+          </div>
           
           {showDatePicker && (
             <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-2xl border border-gray-200 p-2 z-60 w-48">

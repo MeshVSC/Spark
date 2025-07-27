@@ -528,7 +528,13 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
                   value={selectedProjectId || ''}
                   onChange={(e) => {
                     setSelectedProjectId(e.target.value);
-                    if (e.target.value) setSelectedAreaId("");
+                    // Auto-populate folder based on selected project's area
+                    if (e.target.value) {
+                      const selectedProject = projects.find(p => p.id === e.target.value);
+                      if (selectedProject?.area_id) {
+                        setSelectedAreaId(selectedProject.area_id);
+                      }
+                    }
                   }}
                   className="task-form-input"
                 >
@@ -541,7 +547,7 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Area</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Folder</label>
                 <select
                   value={selectedAreaId || ''}
                   onChange={(e) => {

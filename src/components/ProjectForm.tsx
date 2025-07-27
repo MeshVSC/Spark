@@ -22,16 +22,21 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [scheduledDate, setScheduledDate] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high" | "">("");
   const [selectedAreaId, setSelectedAreaId] = useState(areaId || "");
   const [tags, setTags] = useState("");
+  const [duration, setDuration] = useState("");
   const [areas, setAreas] = useState<Area[]>([]);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Calendar popup states (copying from TaskForm)
   const [showDueDatePicker, setShowDueDatePicker] = useState(false);
+  const [showScheduledDatePicker, setShowScheduledDatePicker] = useState(false);
   const [dueDateSearch, setDueDateSearch] = useState("");
+  const [scheduledDateSearch, setScheduledDateSearch] = useState("");
   const [currentDueDate, setCurrentDueDate] = useState(new Date());
+  const [currentScheduledDate, setCurrentScheduledDate] = useState(new Date());
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,9 +64,11 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
             setName(projectData.name);
             setDescription(projectData.description || "");
             setDueDate(projectData.due_date ? new Date(projectData.due_date).toISOString().split('T')[0] : "");
+            setScheduledDate(projectData.scheduled_date ? new Date(projectData.scheduled_date).toISOString().split('T')[0] : "");
             setPriority(projectData.priority || "");
             setSelectedAreaId(projectData.area_id || areaId || "");
             setTags(projectData.tags?.join(", ") || "");
+            setDuration(projectData.duration?.toString() || "");
           }
         }
       } catch (error) {
@@ -155,9 +162,11 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
       name: name.trim(),
       description: description.trim() || undefined,
       due_date: dueDate ? new Date(dueDate).toISOString() : undefined,
+      scheduled_date: scheduledDate ? new Date(scheduledDate).toISOString() : undefined,
       priority: priority || undefined,
       area_id: selectedAreaId || undefined,
       tags: tags.trim() ? tags.split(",").map((tag: string) => tag.trim()).filter(Boolean) : undefined,
+      duration: duration ? parseInt(duration) : undefined,
     };
 
     let optimisticId: string | null = null;
@@ -403,6 +412,32 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            {/* Scheduled Date and Duration */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 py-2">
+                <span className="text-xs font-medium text-gray-500">Scheduled</span>
+                <input
+                  type="date"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  className="flex-1 px-1 py-2 text-sm border-none outline-none bg-transparent"
+                  style={{ color: 'var(--things-gray-600)' }}
+                />
+              </div>
+              <div className="flex items-center gap-2 py-2">
+                <span className="text-xs font-medium text-gray-500">Duration (min)</span>
+                <input
+                  type="number"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  className="flex-1 px-1 py-2 text-sm border-none outline-none bg-transparent"
+                  style={{ color: 'var(--things-gray-600)' }}
+                  placeholder="60"
+                  min="1"
+                />
               </div>
             </div>
 

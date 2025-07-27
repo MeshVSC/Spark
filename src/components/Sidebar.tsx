@@ -100,8 +100,8 @@ type Task = Database['public']['Tables']['tasks']['Row'];
 type TaskStats = Awaited<ReturnType<typeof getTaskStats>>;
 
 interface SidebarProps {
-  currentView: "inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects";
-  onViewChange: (view: "inbox" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects") => void;
+  currentView: "sparks" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects";
+  onViewChange: (view: "sparks" | "today" | "upcoming" | "someday" | "completed" | "calendar" | "timeblocking" | "folders" | "all-projects") => void;
   selectedProjectId: string | null;
   selectedAreaId: string | null;
   onProjectSelect: (projectId: string) => void;
@@ -289,8 +289,8 @@ export function Sidebar({
 
   const views = [
     { 
-      id: "inbox" as const, 
-      name: "Inbox", 
+      id: "sparks" as const, 
+      name: "Sparks", 
       count: taskStats?.pending || 0,
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

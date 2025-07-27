@@ -506,7 +506,13 @@ export function TaskEditForm({ task, onClose }: TaskEditFormProps) {
                   value={selectedProjectId || ''}
                   onChange={(e) => {
                     setSelectedProjectId(e.target.value);
-                    if (e.target.value) setSelectedAreaId("");
+                    // Auto-populate folder based on selected project's area
+                    if (e.target.value) {
+                      const selectedProject = projects.find(p => p.id === e.target.value);
+                      if (selectedProject?.area_id) {
+                        setSelectedAreaId(selectedProject.area_id);
+                      }
+                    }
                   }}
                   className="things-input"
                 >
@@ -521,7 +527,7 @@ export function TaskEditForm({ task, onClose }: TaskEditFormProps) {
 
               <div>
                 <label className="block text-xs font-medium mb-2" style={{ color: 'var(--things-gray-600)' }}>
-                  Area
+                  Folder
                 </label>
                 <select
                   value={selectedAreaId || ''}
@@ -531,7 +537,7 @@ export function TaskEditForm({ task, onClose }: TaskEditFormProps) {
                   }}
                   className="things-input"
                 >
-                  <option value="">No area</option>
+                  <option value="">No folder</option>
                   {areas.map((area) => (
                     <option key={area.id} value={area.id}>
                       {area.name}

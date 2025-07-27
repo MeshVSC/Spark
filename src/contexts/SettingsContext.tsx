@@ -5,7 +5,7 @@ interface Settings {
   showProjectCounts: boolean;
   showProjectDropdowns: boolean;
   moveCompletedToLogbook: 'immediately' | 'after1day' | 'after1week' | 'never';
-  badgeCount: 'today' | 'inbox' | 'all' | 'none';
+  badgeCount: 'today' | 'sparks' | 'all' | 'none';
   groupTodosByProject: boolean;
   smartTimeGrouping: boolean;
   preserveWindowWidth: boolean;

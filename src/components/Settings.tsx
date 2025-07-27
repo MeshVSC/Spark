@@ -173,7 +173,7 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                     style={{ color: 'var(--things-gray-600)' }}
                   >
                     <option value="today">Today</option>
-                    <option value="inbox">Inbox</option>
+                    <option value="sparks">Sparks</option>
                     <option value="all">All</option>
                     <option value="none">None</option>
                   </select>
@@ -192,7 +192,7 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                       Show task counts for views
                     </div>
                     <div className="text-xs mt-1" style={{ color: 'var(--things-gray-500)' }}>
-                      Display numbers next to Inbox, Today, Completed, etc.
+                      Display numbers next to Sparks, Today, Completed, etc.
                     </div>
                   </div>
                 </div>
@@ -373,7 +373,7 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                   Default project for Quick Entry:
                 </label>
                 <select className="px-0 py-2 border-none bg-transparent text-xs outline-none" style={{ color: 'var(--things-gray-600)' }}>
-                  <option>Inbox</option>
+                  <option>Sparks</option>
                   <option>Current project</option>
                   <option>Last used project</option>
                 </select>
@@ -560,7 +560,7 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Inbox View</span>
+                  <span className="text-sm" style={{ color: 'var(--things-gray-600)' }}>Sparks View</span>
                   <div className="flex items-center gap-1">
                     <kbd className="px-2 py-1 bg-gray-100 rounded text-xs" style={{ color: 'var(--things-gray-700)' }}>Ctrl</kbd>
                     <span className="text-xs" style={{ color: 'var(--things-gray-500)' }}>+</span>

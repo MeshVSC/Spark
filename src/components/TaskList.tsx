@@ -13,7 +13,7 @@ type Task = Database['public']['Tables']['tasks']['Row'];
 type Project = Database['public']['Tables']['projects']['Row'];
 
 interface TaskListProps {
-  view: "inbox" | "today" | "upcoming" | "someday" | "completed";
+  view: "sparks" | "today" | "upcoming" | "someday" | "completed";
   projectId?: string | null;
   areaId?: string | null;
   filters?: {
@@ -48,8 +48,9 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
       );
     }
 
-    if (view === 'inbox' && !projectId && !areaId) {
-      list = allTasks;
+    if (view === 'sparks' && !projectId && !areaId) {
+      // Show only unassigned tasks (created via Spark)
+      list = allTasks.filter(task => !task.project_id && !task.area_id);
     } else if (view === 'today') {
       const today = new Date();
       today.setHours(23, 59, 59, 999);
@@ -136,7 +137,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
       };
     }).filter(p => p.totalCount > 0);
 
-    // Add unassigned tasks as a special "Inbox" project if any exist
+    // Add unassigned tasks as a special "Sparks" project if any exist
     // Only include unassigned tasks from the selected area if areaId is provided
     const filteredUnassignedTasks = areaId 
       ? unassignedTasks.filter(t => t.area_id === areaId)
@@ -145,7 +146,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     if (filteredUnassignedTasks.length > 0) {
       organized.unshift({
         id: 'unassigned',
-        name: 'Inbox',
+        name: 'Sparks',
         description: null,
         color: '#8E8E93',
         user_id: '',

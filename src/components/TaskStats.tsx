@@ -5,7 +5,7 @@ import type { Database } from "../lib/supabase";
 type Task = Database['public']['Tables']['tasks']['Row'];
 
 interface TaskStatsProps {
-  view: "inbox" | "today" | "upcoming" | "someday" | "completed";
+  view: "sparks" | "today" | "upcoming" | "someday" | "completed";
   projectId?: string | null;
   areaId?: string | null;
 }
