@@ -51,9 +51,15 @@ export function TaskSearch({ isVisible, onClose }: TaskSearchProps) {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex items-start justify-center pt-32 z-50">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-20 flex items-start justify-center pt-32 z-50"
+      onClick={onClose}
+    >
       {/* Fixed search input area */}
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+      <div 
+        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-4">
           <div className="flex items-center gap-3">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">

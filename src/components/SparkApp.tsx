@@ -571,14 +571,14 @@ export function SparkApp() {
                 </svg>
               </button>
 
-              {/* Subtask */}
+              {/* Spark */}
               <button
-                onClick={() => setShowSubtaskForm(true)}
+                onClick={() => setShowQuickEntry(true)}
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
-                title="New Subtask (⌘S)"
+                title="Spark (⌘Q)"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                <svg width="18" height="18" viewBox="0 0 352.169 352.169" fill="currentColor" stroke="currentColor" strokeWidth="12" className="text-gray-600">
+                  <polygon points="245.281,293.778 177.643,323.046 245.821,171.551 249.712,162.961 129.725,162.961 211.378,8.437 195.394,0 99.701,181.032 221.718,181.032 160.487,317.132 130.764,248.467 114.157,255.637 155.951,352.169 252.469,310.388"/>
                 </svg>
               </button>
               
@@ -604,17 +604,6 @@ export function SparkApp() {
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="8" x2="12" y2="16"></line>
                   <line x1="8" y1="12" x2="16" y2="12"></line>
-                </svg>
-              </button>
-
-              {/* Spark */}
-              <button
-                onClick={() => setShowQuickEntry(true)}
-                className="p-1 rounded hover:bg-gray-100 transition-colors"
-                title="Spark (⌘Q)"
-              >
-                <svg width="18" height="18" viewBox="0 0 352.169 352.169" fill="currentColor" stroke="currentColor" strokeWidth="12" className="text-gray-600">
-                  <polygon points="245.281,293.778 177.643,323.046 245.821,171.551 249.712,162.961 129.725,162.961 211.378,8.437 195.394,0 99.701,181.032 221.718,181.032 160.487,317.132 130.764,248.467 114.157,255.637 155.951,352.169 252.469,310.388"/>
                 </svg>
               </button>
               

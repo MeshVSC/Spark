@@ -157,8 +157,18 @@ export function Sidebar({
         targetProjectId: dropZone.id.startsWith('project-') ? dropZone.id.replace('project-', '') : undefined,
         targetAreaId: dropZone.id.startsWith('area-') ? dropZone.id.replace('area-', '') : undefined,
       });
-      // Data will be updated via real-time subscriptions
-      console.log('Drop operation completed successfully');
+      
+      // Manually refresh data to ensure immediate UI updates
+      console.log('Drop operation completed successfully - refreshing data...');
+      const [updatedProjects, updatedAreas, stats] = await Promise.all([
+        getProjects(),
+        getAreas(),
+        getTaskStats()
+      ]);
+      setProjects(updatedProjects);
+      setAreas(updatedAreas);
+      setTaskStats(stats);
+      console.log('🔄 Data refreshed after drop');
     } catch (error) {
       console.error('Failed to handle sidebar drop:', error);
     }
@@ -442,7 +452,7 @@ export function Sidebar({
       <div className="pt-4 pb-2">
         {/* Group 1: Inbox & Completed - slightly separated */}
         <div className="space-y-0" style={{ marginBottom: '12px' }}>
-          {views.filter(view => view.id === 'inbox' || view.id === 'completed').map((view) => (
+          {views.filter(view => view.id === 'sparks' || view.id === 'completed').map((view) => (
             <div
               key={view.id}
               className={`w-full group ${

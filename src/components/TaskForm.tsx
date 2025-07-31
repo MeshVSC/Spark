@@ -229,7 +229,7 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full px-1 py-2 text-xl font-medium border-none outline-none placeholder-gray-400 bg-transparent"
-            placeholder="New To-Do"
+            placeholder="New Task"
             autoFocus
           />
 
@@ -240,7 +240,7 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-1 py-2 text-sm border-none outline-none placeholder-gray-400 bg-transparent resize-none"
               placeholder="Notes"
-              rows={3}
+              rows={1}
             />
           </div>
 
@@ -264,26 +264,20 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
                   </button>
                   
                   {!dueDate ? (
-                    <div className="relative flex items-center">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" 
-                           className="absolute left-1 pointer-events-none" 
-                           style={{ color: 'var(--things-gray-400)' }}>
-                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                      </svg>
-                      <input
-                        type="text"
-                        value={dueDateSearch}
-                        onChange={(e) => setDueDateSearch(e.target.value)}
-                        className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
-                        placeholder=""
-                        style={{ color: 'var(--things-gray-600)' }}
-                      />
-                      {getSuggestion(dueDateSearch) && (
-                        <span className="text-xs font-medium ml-1" style={{ color: 'var(--things-gray-600)' }}>
-                          {getSuggestion(dueDateSearch)}
-                        </span>
-                      )}
-                    </div>
+                    <input
+                      type="text"
+                      value={dueDateSearch}
+                      onChange={(e) => setDueDateSearch(e.target.value)}
+                      className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
+                      placeholder=""
+                      style={{ 
+                        backgroundImage: !dueDateSearch ? `url("data:image/svg+xml;charset=utf-8,%3csvg width='12' height='12' viewBox='0 0 24 24' fill='%23999999' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3e%3c/svg%3e")` : 'none', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundPosition: '4px center', 
+                        backgroundSize: '12px 12px',
+                        color: 'var(--things-gray-600)'
+                      }}
+                    />
                   ) : (
                     <button
                       type="button"
@@ -386,26 +380,20 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
                   </button>
                   
                   {!scheduledDate ? (
-                    <div className="relative flex items-center">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" 
-                           className="absolute left-1 pointer-events-none" 
-                           style={{ color: 'var(--things-gray-400)' }}>
-                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                      </svg>
-                      <input
-                        type="text"
-                        value={scheduledDateSearch}
-                        onChange={(e) => setScheduledDateSearch(e.target.value)}
-                        className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
-                        placeholder=""
-                        style={{ color: 'var(--things-gray-600)' }}
-                      />
-                      {getSuggestion(scheduledDateSearch) && (
-                        <span className="text-xs font-medium ml-1" style={{ color: 'var(--things-gray-600)' }}>
-                          {getSuggestion(scheduledDateSearch)}
-                        </span>
-                      )}
-                    </div>
+                    <input
+                      type="text"
+                      value={scheduledDateSearch}
+                      onChange={(e) => setScheduledDateSearch(e.target.value)}
+                      className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
+                      placeholder=""
+                      style={{ 
+                        backgroundImage: !scheduledDateSearch ? `url("data:image/svg+xml;charset=utf-8,%3csvg width='12' height='12' viewBox='0 0 24 24' fill='%23999999' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3e%3c/svg%3e")` : 'none', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundPosition: '4px center', 
+                        backgroundSize: '12px 12px',
+                        color: 'var(--things-gray-600)'
+                      }}
+                    />
                   ) : (
                     <button
                       type="button"
@@ -567,14 +555,15 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
             </div>
 
             {/* Tags */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Tags</label>
+            <div className="flex items-center gap-2 py-2">
+              <span className="text-xs font-medium text-gray-500">Tags</span>
               <input
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                className="task-form-input"
+                className="flex-1 px-1 py-2 text-sm border-none outline-none bg-transparent"
                 placeholder="work, urgent (comma separated)"
+                style={{ color: 'var(--things-gray-600)' }}
               />
             </div>
           </div>
@@ -594,7 +583,8 @@ export function TaskForm({ onClose, projectId, areaId, task }: TaskFormProps) {
               type="submit"
               form="taskForm"
               disabled={!title.trim()}
-              className="px-3 py-1 bg-blue-600 text-white rounded text-xs disabled:opacity-50"
+              className="px-3 py-1 rounded text-xs disabled:opacity-50"
+              style={{ background: "#90B1F6", color: "white" }}
             >
               {task ? "Update Task" : "Create Task"}
             </button>

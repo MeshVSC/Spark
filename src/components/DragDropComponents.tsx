@@ -12,11 +12,54 @@ export function Draggable({ item, children, className = '', disabled = false }: 
   const { startDrag, endDrag, isDragging, dragItem } = useDragDrop();
   
   const handleDragStart = (e: React.DragEvent) => {
+    console.log('🚨 DRAG START ATTEMPT:', { target: e.target, disabled });
+    
     if (disabled) {
+      console.log('❌ Drag disabled');
       e.preventDefault();
       return;
     }
     
+    // Check if drag started from drag handle
+    const target = e.target as HTMLElement;
+    const currentTarget = e.currentTarget as HTMLElement;
+    
+    // Check if any drag handle was marked during mousedown
+    const isDragHandleMarked = Array.from(currentTarget.querySelectorAll('.drag-handle')).some(
+      handle => (handle as any).__isDragHandle
+    );
+    
+    // Traditional detection as fallback
+    const isDragHandle = target.closest('.drag-handle');
+    
+    console.log('🔍 Handle check:', { 
+      target: target, 
+      targetClass: target.className,
+      targetTagName: target.tagName,
+      isDragHandleMarked,
+      isDragHandle: !!isDragHandle,
+      // Additional debugging
+      targetHTML: target.outerHTML?.substring(0, 100),
+      closestDragHandle: isDragHandle?.outerHTML?.substring(0, 100)
+    });
+    
+    // Check if drag originated from handle using marker or traditional detection
+    const isFromHandle = isDragHandleMarked || isDragHandle;
+    
+    if (!isFromHandle) {
+      console.log('❌ No drag handle found, preventing drag');
+      e.preventDefault();
+      return;
+    }
+    
+    // Clear the marker
+    Array.from(currentTarget.querySelectorAll('.drag-handle')).forEach(
+      handle => delete (handle as any).__isDragHandle
+    );
+    
+    console.log('✅ Drag handle detected, allowing drag');
+    
+    console.log('✅ Starting drag for:', item);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', ''); // For Firefox compatibility
     startDrag(item);
@@ -166,18 +209,33 @@ export function DropZone({
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    console.log('🎯 DROP EVENT FIRED!', { 
+      zone: zone.id, 
+      dragItem, 
+      isValidDropTarget,
+      dragOverZone,
+      eventTarget: e.target,
+      eventCurrentTarget: e.currentTarget 
+    });
+    
     e.preventDefault();
     setDragOver(null);
     
-    if (!isValidDropTarget || !dragItem) return;
+    if (!isValidDropTarget || !dragItem) {
+      console.log('❌ Drop rejected:', { isValidDropTarget, dragItem, dragOverZone });
+      return;
+    }
     
     // Use the calculated insertion index from drag over
     const targetIndex = insertionIndex ?? 0;
+    
+    console.log('📍 Drop details:', { targetIndex, zone, dragItem });
     
     // Clear insertion indicator
     setInsertionIndex(null);
     setDropContainer(null);
     
+    console.log('🚀 Calling onDrop handler');
     onDrop?.(dragItem, zone, targetIndex);
     endDrag();
   };
@@ -209,12 +267,26 @@ interface DragHandleProps {
 
 export function DragHandle({ className = '' }: DragHandleProps) {
   return (
-    <div className={`drag-handle ${className}`}>
+    <div 
+      className={`drag-handle ${className} cursor-grab active:cursor-grabbing`}
+      style={{
+        // Make the clickable area much larger while keeping visual appearance
+        minWidth: '20px',
+        minHeight: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+      onMouseDown={(e) => {
+        // Mark this element as the drag handle for event bubbling
+        (e.currentTarget as any).__isDragHandle = true;
+      }}
+    >
       <svg 
         width="6" 
         height="12" 
         viewBox="0 0 6 12" 
-        className="text-gray-400 hover:text-gray-600 transition-colors"
+        className="text-gray-400 hover:text-gray-600 transition-colors pointer-events-none"
         fill="currentColor"
       >
         <circle cx="3" cy="2" r="1" />

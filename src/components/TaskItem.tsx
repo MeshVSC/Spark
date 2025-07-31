@@ -3,9 +3,9 @@ import { getSubtasks, subscribeToSubtasks } from "../lib/queries/subtasks";
 import { SubtaskList } from "./SubtaskList";
 import { SubtaskForm } from "./SubtaskForm";
 import { CustomCheckbox } from "./CustomCheckbox";
-import { Draggable, DragHandle } from "./DragDropComponents";
+import { Draggable, DragHandle, DropZone } from "./DragDropComponents";
 import type { Database } from "../lib/supabase";
-import type { DragItem } from "../contexts/DragDropContext";
+import type { DragItem, DropZone as DropZoneType } from "../contexts/DragDropContext";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type Subtask = Database['public']['Tables']['subtasks']['Row'];
@@ -15,9 +15,10 @@ interface TaskItemProps {
   onToggle: () => void;
   onDelete: () => void;
   onEditTask: (taskId: string) => void;
+  onDrop?: (dragItem: DragItem, dropZone: DropZoneType, targetIndex?: number) => void;
 }
 
-export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps) {
+export function TaskItem({ task, onToggle, onDelete, onEditTask, onDrop }: TaskItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);

@@ -111,6 +111,11 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
     
+    // Handle week/month searches by showing all days if they match
+    if ('week'.startsWith(query) || 'month'.startsWith(query)) {
+      return allDays;
+    }
+    
     return allDays.map(date => {
       if (!date) return null;
       
@@ -132,7 +137,7 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
     
     const query = searchQuery.toLowerCase();
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    const relativeDates = ['today', 'tomorrow', 'yesterday'];
+    const relativeDates = ['today', 'tomorrow', 'yesterday', 'next week', 'this week', 'next month', 'this month'];
     
     const matchingRelativeDate = relativeDates.find(date => date.startsWith(query));
     if (matchingRelativeDate) {
@@ -246,31 +251,31 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-1 py-2 text-sm border-none outline-none placeholder-gray-400 bg-transparent resize-none"
-              placeholder="What is this project about?"
+              placeholder="Notes"
               rows={1}
             />
           </div>
 
           <div className="pt-4 border-t border-gray-200 space-y-4">
-            {/* Due Date */}
-            <div className="relative">
-              <div className="flex items-center gap-2 py-2">
-                <span className="text-xs font-medium text-gray-500">Due Date</span>
-                <button
-                  type="button"
-                  onClick={() => setShowDueDatePicker(!showDueDatePicker)}
-                  className={`p-1 rounded transition-colors ${
-                    dueDate ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                  title="Set due date"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                  </svg>
-                </button>
-                
-                {!dueDate ? (
-                  <div className="relative flex items-center">
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="relative">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Due Date</label>
+                <div className="flex items-center gap-2 py-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDueDatePicker(!showDueDatePicker)}
+                    className={`p-1 rounded transition-colors ${
+                      dueDate ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                    title="Set due date"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                  </button>
+                  
+                  {!dueDate ? (
                     <input
                       type="text"
                       value={dueDateSearch}
@@ -281,107 +286,167 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
                           if (suggestion) {
                             e.preventDefault();
                             setDueDateSearch(suggestion.toLowerCase());
+                            
+                            // If the suggestion is a complete term, handle date selection
+                            if (suggestion.toLowerCase() === 'today') {
+                              const today = new Date().toISOString().split('T')[0];
+                              setDueDate(today);
+                              setDueDateSearch("");
+                              setShowDueDatePicker(false);
+                            } else if (suggestion.toLowerCase() === 'tomorrow') {
+                              const tomorrow = new Date();
+                              tomorrow.setDate(tomorrow.getDate() + 1);
+                              setDueDate(tomorrow.toISOString().split('T')[0]);
+                              setDueDateSearch("");
+                              setShowDueDatePicker(false);
+                            }
                           }
                         }
                       }}
                       className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
-                      placeholder={getSuggestion(dueDateSearch) || "🔍"}
-                      style={{ color: 'var(--things-gray-600)' }}
+                      placeholder=""
+                      style={{ 
+                        backgroundImage: !dueDateSearch ? `url("data:image/svg+xml;charset=utf-8,%3csvg width='12' height='12' viewBox='0 0 24 24' fill='%23999999' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3e%3c/svg%3e")` : 'none', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundPosition: '4px center', 
+                        backgroundSize: '12px 12px',
+                        color: 'var(--things-gray-600)'
+                      }}
                     />
-                    {!dueDateSearch && (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" 
-                           className="absolute left-1 pointer-events-none" 
-                           style={{ color: 'var(--things-gray-400)' }}>
-                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                      </svg>
-                    )}
-                  </div>
-                ) : (
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDueDate("");
+                        setDueDateSearch("");
+                        setShowDueDatePicker(true);
+                      }}
+                      className="text-xs font-medium hover:bg-gray-100 px-1 py-0.5 rounded transition-colors"
+                      style={{ color: 'var(--things-gray-600)' }}
+                    >
+                      {formatSelectedDate(dueDate)}
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="relative">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Scheduled</label>
+                <div className="flex items-center gap-2 py-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      setDueDate("");
-                      setDueDateSearch("");
-                      setShowDueDatePicker(true);
-                    }}
-                    className="text-xs font-medium hover:bg-gray-100 px-1 py-0.5 rounded transition-colors"
-                    style={{ color: 'var(--things-gray-600)' }}
+                    onClick={() => setShowScheduledDatePicker(!showScheduledDatePicker)}
+                    className={`p-1 rounded transition-colors ${
+                      scheduledDate ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                    title="Set scheduled date"
                   >
-                    {formatSelectedDate(dueDate)}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
                   </button>
-                )}
-              </div>
-
-              {showDueDatePicker && (
-                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-2xl border border-gray-200 p-2 z-60 w-48">
-                  <div className="flex items-center justify-between mb-2">
-                    <button
-                      type="button"
-                      onClick={() => setCurrentDueDate(new Date(currentDueDate.getFullYear(), currentDueDate.getMonth() - 1, 1))}
-                      className="p-1 rounded hover:bg-gray-100 transition-colors"
-                      style={{ color: 'var(--things-gray-500)' }}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                      </svg>
-                    </button>
-                    <div className="text-xs font-medium" style={{ color: 'var(--things-gray-700)' }}>
-                      {currentDueDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setCurrentDueDate(new Date(currentDueDate.getFullYear(), currentDueDate.getMonth() + 1, 1))}
-                      className="p-1 rounded hover:bg-gray-100 transition-colors"
-                      style={{ color: 'var(--things-gray-500)' }}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                      </svg>
-                    </button>
-                  </div>
                   
-                  <div className="grid grid-cols-7 gap-0.5 mb-1">
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-                      <div key={day} className="text-xs text-center py-1" style={{ color: 'var(--things-gray-500)' }}>
-                        {day}
+                  {!scheduledDate ? (
+                    <input
+                      type="text"
+                      value={scheduledDateSearch}
+                      onChange={(e) => setScheduledDateSearch(e.target.value)}
+                      className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
+                      placeholder=""
+                      style={{ 
+                        backgroundImage: !scheduledDateSearch ? `url("data:image/svg+xml;charset=utf-8,%3csvg width='12' height='12' viewBox='0 0 24 24' fill='%23999999' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3e%3c/svg%3e")` : 'none', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundPosition: '4px center', 
+                        backgroundSize: '12px 12px',
+                        color: 'var(--things-gray-600)'
+                      }}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setScheduledDate("");
+                        setScheduledDateSearch("");
+                        setShowScheduledDatePicker(true);
+                      }}
+                      className="text-xs font-medium hover:bg-gray-100 px-1 py-0.5 rounded transition-colors"
+                      style={{ color: 'var(--things-gray-600)' }}
+                    >
+                      {formatSelectedDate(scheduledDate)}
+                    </button>
+                  )}
+                  {showDueDatePicker && (
+                    <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-2xl border border-gray-200 p-2 z-60 w-48">
+                      <div className="flex items-center justify-between mb-2">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentDueDate(new Date(currentDueDate.getFullYear(), currentDueDate.getMonth() - 1, 1))}
+                          className="p-1 rounded hover:bg-gray-100 transition-colors"
+                          style={{ color: 'var(--things-gray-500)' }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                          </svg>
+                        </button>
+                        <div className="text-xs font-medium" style={{ color: 'var(--things-gray-700)' }}>
+                          {currentDueDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentDueDate(new Date(currentDueDate.getFullYear(), currentDueDate.getMonth() + 1, 1))}
+                          className="p-1 rounded hover:bg-gray-100 transition-colors"
+                          style={{ color: 'var(--things-gray-500)' }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                          </svg>
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                  
-                  <div className="grid grid-cols-7 gap-0.5">
-                    {getFilteredDates(currentDueDate, dueDateSearch).map((date, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => date && handleDateSelect(date)}
-                        disabled={!date}
-                        className={`
-                          h-6 w-6 text-xs rounded transition-all
-                          ${!date ? 'invisible' : ''}
-                          ${dueDateSearch && !date ? 'opacity-20' : ''}
-                          ${date && date.toDateString() === new Date().toDateString() 
-                            ? 'bg-blue-100 text-blue-600 font-medium' 
-                            : 'hover:bg-gray-100'
-                          }
-                          ${date && dueDate && date.toISOString().split('T')[0] === dueDate
-                            ? 'text-white font-medium'
-                            : 'text-gray-700'
-                          }
-                        `}
-                        style={{
-                          backgroundColor: date && dueDate && date.toISOString().split('T')[0] === dueDate ? '#90B1F6' : undefined,
-                          color: date && dueDate && date.toISOString().split('T')[0] === dueDate ? 'white' : undefined
-                        }}
-                      >
-                        {date?.getDate()}
-                      </button>
-                    ))}
-                  </div>
+                      
+                      <div className="grid grid-cols-7 gap-0.5 mb-1">
+                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
+                          <div key={day} className="text-xs text-center py-1" style={{ color: 'var(--things-gray-500)' }}>
+                            {day}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <div className="grid grid-cols-7 gap-0.5">
+                        {getFilteredDates(currentDueDate, dueDateSearch).map((date, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => date && handleDateSelect(date)}
+                            disabled={!date}
+                            className={`
+                              h-6 w-6 text-xs rounded transition-all
+                              ${!date ? 'invisible' : ''}
+                              ${dueDateSearch && !date ? 'opacity-20' : ''}
+                              ${date && date.toDateString() === new Date().toDateString() 
+                                ? 'bg-blue-100 text-blue-600 font-medium' 
+                                : 'hover:bg-gray-100'
+                              }
+                              ${date && dueDate && date.toISOString().split('T')[0] === dueDate
+                                ? 'text-white font-medium'
+                                : 'text-gray-700'
+                              }
+                            `}
+                            style={{
+                              backgroundColor: date && dueDate && date.toISOString().split('T')[0] === dueDate ? '#90B1F6' : undefined,
+                              color: date && dueDate && date.toISOString().split('T')[0] === dueDate ? 'white' : undefined
+                            }}
+                          >
+                            {date?.getDate()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* Priority and Folder */}
+            {/* Priority and Duration */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2 py-2">
                 <span className="text-xs font-medium text-gray-500">Priority</span>
@@ -398,36 +463,6 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
                 </select>
               </div>
               <div className="flex items-center gap-2 py-2">
-                <span className="text-xs font-medium text-gray-500">Folder</span>
-                <select
-                  value={selectedAreaId}
-                  onChange={(e) => setSelectedAreaId(e.target.value)}
-                  className="flex-1 px-1 py-2 text-sm border-none outline-none bg-transparent"
-                  style={{ color: 'var(--things-gray-600)' }}
-                >
-                  <option value="">None</option>
-                  {areas.map((area) => (
-                    <option key={area.id} value={area.id}>
-                      {area.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Scheduled Date and Duration */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2 py-2">
-                <span className="text-xs font-medium text-gray-500">Scheduled</span>
-                <input
-                  type="date"
-                  value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                  className="flex-1 px-1 py-2 text-sm border-none outline-none bg-transparent"
-                  style={{ color: 'var(--things-gray-600)' }}
-                />
-              </div>
-              <div className="flex items-center gap-2 py-2">
                 <span className="text-xs font-medium text-gray-500">Duration (min)</span>
                 <input
                   type="number"
@@ -441,9 +476,28 @@ export function ProjectForm({ onClose, areaId, projectId }: ProjectFormProps) {
               </div>
             </div>
 
+            {/* Folder */}
+            <div className="flex items-center gap-2 py-2">
+              <span className="text-xs font-medium text-gray-500">Folder</span>
+              <select
+                value={selectedAreaId}
+                onChange={(e) => setSelectedAreaId(e.target.value)}
+                className="flex-1 px-1 py-2 text-sm border-none outline-none bg-transparent"
+                style={{ color: 'var(--things-gray-600)' }}
+              >
+                <option value="">None</option>
+                {areas.map((area) => (
+                  <option key={area.id} value={area.id}>
+                    {area.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+
           </div>
 
-          <div className="pt-4 border-t border-gray-200 space-y-4">
+          <div className="pt-4 space-y-4">
             {/* Tags */}
             <div className="flex items-center gap-2 py-2">
               <span className="text-xs font-medium text-gray-500">Tags</span>

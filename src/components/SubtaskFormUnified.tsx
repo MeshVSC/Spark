@@ -43,6 +43,11 @@ export function SubtaskFormUnified({ onClose }: SubtaskFormUnifiedProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const { refresh } = useTaskStore();
 
+  // Calendar popup states
+  const [showDueDatePicker, setShowDueDatePicker] = useState(false);
+  const [dueDateSearch, setDueDateSearch] = useState("");
+  const [currentDueDate, setCurrentDueDate] = useState(new Date());
+
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
@@ -81,6 +86,17 @@ export function SubtaskFormUnified({ onClose }: SubtaskFormUnifiedProps) {
     }
   };
 
+  const formatSelectedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const handleDateSelect = (date: Date) => {
+    const selectedDate = date.toISOString().split('T')[0];
+    setDueDate(selectedDate);
+    setShowDueDatePicker(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
@@ -114,7 +130,7 @@ export function SubtaskFormUnified({ onClose }: SubtaskFormUnifiedProps) {
     <>
       <style>{styles}</style>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div ref={modalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div ref={modalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-md">
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">New Subtask</h2>
             
@@ -146,23 +162,92 @@ export function SubtaskFormUnified({ onClose }: SubtaskFormUnifiedProps) {
 
             {/* Due Date and Scheduled Date */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-medium text-gray-500 mb-1">Due Date</label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="subtask-form-input"
-                />
+                <div className="flex items-center gap-2 py-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDueDatePicker(!showDueDatePicker)}
+                    className={`p-1 rounded transition-colors ${
+                      dueDate ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                    title="Set due date"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                  </button>
+                  
+                  {!dueDate ? (
+                    <input
+                      type="text"
+                      value={dueDateSearch}
+                      onChange={(e) => setDueDateSearch(e.target.value)}
+                      className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
+                      placeholder=""
+                      style={{ 
+                        backgroundImage: !dueDateSearch ? `url("data:image/svg+xml;charset=utf-8,%3csvg width='12' height='12' viewBox='0 0 24 24' fill='%23999999' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3e%3c/svg%3e")` : 'none', 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundPosition: '4px center', 
+                        backgroundSize: '12px 12px',
+                        color: 'var(--things-gray-600)'
+                      }}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDueDate("");
+                        setDueDateSearch("");
+                        setShowDueDatePicker(true);
+                      }}
+                      className="text-xs font-medium hover:bg-gray-100 px-1 py-0.5 rounded transition-colors"
+                      style={{ color: 'var(--things-gray-600)' }}
+                    >
+                      {formatSelectedDate(dueDate)}
+                    </button>
+                  )}
+                </div>
               </div>
+              
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Scheduled</label>
-                <input
-                  type="date"
-                  value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                  className="subtask-form-input"
-                />
+                <div className="flex items-center gap-2 py-2">
+                  <button
+                    type="button"
+                    className="p-1 rounded transition-colors text-gray-400 hover:text-gray-600"
+                    title="Set scheduled date"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                  </button>
+                  
+                  {!scheduledDate ? (
+                    <input
+                      type="text"
+                      value=""
+                      className="w-20 pl-5 pr-1 py-0 text-xs border-none outline-none bg-transparent"
+                      placeholder=""
+                      style={{ 
+                        backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3csvg width='12' height='12' viewBox='0 0 24 24' fill='%23999999' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3e%3c/svg%3e")`, 
+                        backgroundRepeat: 'no-repeat', 
+                        backgroundPosition: '4px center', 
+                        backgroundSize: '12px 12px',
+                        color: 'var(--things-gray-600)'
+                      }}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setScheduledDate("")}
+                      className="text-xs font-medium hover:bg-gray-100 px-1 py-0.5 rounded transition-colors"
+                      style={{ color: 'var(--things-gray-600)' }}
+                    >
+                      {formatSelectedDate(scheduledDate)}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

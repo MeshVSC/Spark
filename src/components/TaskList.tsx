@@ -295,7 +295,16 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
         targetProjectId: projectId || undefined,
         targetAreaId: areaId || undefined,
       });
-      await refresh(); // Refresh to show the updated order
+      
+      // Force refresh tasks data to ensure immediate UI updates
+      console.log('Task drop completed successfully - refreshing task data...');
+      await refresh(); // Refresh the global task store
+      
+      // Force a re-render by updating local state to pick up the new sort order
+      setProjects(prev => [...prev]); // Trigger re-render
+      setProjectsWithTasks(prev => [...prev]); // Trigger re-render of projects with tasks
+      
+      console.log('🔄 Task data refreshed after drop');
     } catch (error) {
       console.error('Failed to handle task drop:', error);
       // Refresh even on error to restore UI state
@@ -325,6 +334,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
               onToggle={() => handleToggle(task.id)}
               onDelete={() => handleDelete(task.id)}
               onEditTask={onEditTask}
+              onDrop={handleTaskDrop}
             />
           ))}
         </div>
@@ -371,6 +381,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
                     onToggle={() => handleToggle(task.id)}
                     onDelete={() => handleDelete(task.id)}
                     onEditTask={onEditTask}
+                    onDrop={handleTaskDrop}
                   />
                 ))}
               </div>
