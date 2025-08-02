@@ -148,9 +148,10 @@ export function Sidebar({
   const { openTask } = useTaskNavigation();
 
   // Handle drop events in sidebar
-  const handleSidebarDrop = async (dragItem: DragItem, dropZone: DropZoneType) => {
+  const handleSidebarDrop = async (dragItem: DragItem, dropZone: DropZoneType, targetIndex?: number) => {
     try {
       await handleDrop(dragItem, dropZone, {
+        targetIndex,
         allTasks: projectTasks ? Object.values(projectTasks).flat().map(t => ({ id: t.id, sort_order: t.sort_order })) : [],
         allProjects: projects.map(p => ({ id: p.id, sort_order: p.sort_order })),
         allAreas: areas.map(a => ({ id: a.id, sort_order: a.sort_order })),
