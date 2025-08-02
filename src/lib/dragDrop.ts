@@ -11,7 +11,7 @@ export interface DragDropHandlers {
   onSubtaskDrop: (subtaskId: string, targetTaskId?: string, newIndex?: number) => Promise<void>;
 }
 
-// Calculate new sort order based on position
+// Calculate new sort order based on position using fractional ordering
 export function calculateSortOrder(
   items: Array<{ id: string; sort_order: number | null }>,
   targetIndex: number,
@@ -41,7 +41,7 @@ export function calculateSortOrder(
   if (targetIndex === 0) {
     const firstItem = filteredItems[0];
     const firstOrder = firstItem.sort_order || 1000;
-    const newOrder = Math.max(1, firstOrder - 1000);
+    const newOrder = Math.max(1, firstOrder / 2);
     console.log('Dropping at beginning, new order:', newOrder);
     return newOrder;
   }
@@ -61,19 +61,23 @@ export function calculateSortOrder(
   const prevOrder = prevItem?.sort_order || 0;
   const nextOrder = nextItem?.sort_order || 2000;
   
-  // Ensure we have enough space between items
+  // Use fractional ordering for better precision
   let newOrder: number;
-  if (nextOrder - prevOrder <= 1) {
-    // Items are too close, use timestamp-based approach
-    newOrder = Date.now();
+  const gap = nextOrder - prevOrder;
+  
+  if (gap < 0.000001) {
+    // Items are too close, need to rebalance the entire list
+    console.warn('⚠️ Items too close, using fallback ordering');
+    newOrder = prevOrder + 0.5;
   } else {
-    // Create a sort order between the two items
-    newOrder = Math.floor((prevOrder + nextOrder) / 2);
+    // Create a sort order exactly between the two items
+    newOrder = prevOrder + (gap / 2);
   }
   
   console.log('Dropping between items:', { 
     prevOrder, 
     nextOrder, 
+    gap,
     newOrder,
     prevItem: prevItem?.id,
     nextItem: nextItem?.id

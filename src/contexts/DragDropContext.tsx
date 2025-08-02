@@ -23,6 +23,7 @@ interface DragDropContextType {
   endDrag: () => void;
   setDragOver: (zoneId: string | null) => void;
   canDrop: (zone: DropZone) => boolean;
+  isDragActive: boolean; // New: indicates when drag operation is happening
 }
 
 const DragDropContext = createContext<DragDropContextType | undefined>(undefined);
@@ -30,14 +31,19 @@ const DragDropContext = createContext<DragDropContextType | undefined>(undefined
 export function DragDropProvider({ children }: { children: React.ReactNode }) {
   const [dragItem, setDragItem] = useState<DragItem | null>(null);
   const [dragOverZone, setDragOverZone] = useState<string | null>(null);
+  const [isDragActive, setIsDragActive] = useState(false);
 
   const startDrag = (item: DragItem) => {
+    console.log('🚀 DragDropContext: Starting drag for item:', item);
     setDragItem(item);
+    setIsDragActive(true);
   };
 
   const endDrag = () => {
+    console.log('🏁 DragDropContext: Ending drag operation');
     setDragItem(null);
     setDragOverZone(null);
+    setIsDragActive(false);
   };
 
   const setDragOver = (zoneId: string | null) => {
@@ -79,6 +85,7 @@ export function DragDropProvider({ children }: { children: React.ReactNode }) {
         endDrag,
         setDragOver,
         canDrop,
+        isDragActive,
       }}
     >
       {children}

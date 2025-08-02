@@ -14,7 +14,11 @@ export function CustomCheckbox({ checked = false, onChange, className = "" }: Cu
     setIsChecked(checked);
   }, [checked]);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent event from bubbling to avoid interfering with drag events
+    e.stopPropagation();
+    e.preventDefault();
+    
     const newValue = !isChecked;
     setIsChecked(newValue);
     onChange?.(newValue);

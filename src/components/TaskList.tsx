@@ -8,6 +8,7 @@ import { useTaskStore } from "../stores/useTaskStore";
 import { DropZone } from "./DragDropComponents";
 import { handleDrop } from "../lib/dragDrop";
 import type { DragItem, DropZone as DropZoneType } from "../contexts/DragDropContext";
+import { useDragDrop } from "../contexts/DragDropContext";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -34,6 +35,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsWithTasks, setProjectsWithTasks] = useState<ProjectWithTasks[]>([]);
   const { tasks: allTasks, refresh, deleteOptimistic } = useTaskStore();
+  const { isDragActive } = useDragDrop();
 
   const tasks = useMemo(() => {
     let list = allTasks;
@@ -83,9 +85,23 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     fetchProjects();
 
     const projectSubscription = subscribeToProjects(async () => {
+      // Skip subscription updates during drag operations to prevent interference
+      if (isDragActive) {
+        console.log('🚫 Skipping project subscription update during drag operation');
+        return;
+      }
+      
       try {
+        console.log('📡 Project subscription triggered - fetching updated projects');
         const updatedProjects = await getProjects();
+        console.log('📡 Updated projects received:', { count: updatedProjects.length });
         setProjects(updatedProjects);
+        
+        // Force immediate re-render of projects with tasks to pick up new projects
+        setTimeout(() => {
+          console.log('🔄 Forcing projects with tasks re-calculation');
+          setProjectsWithTasks(prev => [...prev]);
+        }, 100);
       } catch (error) {
         console.error("Failed to fetch updated projects:", error);
       }
@@ -94,7 +110,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     return () => {
       projectSubscription.unsubscribe();
     };
-  }, []);
+  }, [isDragActive]);
 
   // Group tasks by project when not viewing a specific project
   // Areas should still show project organization
@@ -270,45 +286,35 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     </div>
   );
 
-  // Handle drop events
-  const handleTaskDrop = async (dragItem: DragItem, dropZone: DropZoneType, targetIndex?: number) => {
+  // Universal drop handler that works with the unified DragDropComponents system
+  const handleTaskListDrop = async (dragItem: DragItem, dropZone: DropZoneType, targetIndex?: number) => {
     try {
-      console.log('TaskList handleTaskDrop:', { 
-        dragItem, 
-        dropZone, 
-        targetIndex, 
-        projectId, 
-        areaId,
-        allTasksCount: allTasks.length 
+      console.log('🎯 TaskList drop handler called:', { 
+        dragItem: dragItem.id, 
+        dragType: dragItem.type,
+        dropZone: dropZone.id, 
+        dropType: dropZone.type,
+        targetIndex,
+        context: { projectId, areaId }
       });
       
-      // For task reordering, we need to pass the filtered tasks that are actually being displayed
-      const relevantTasks = projectId 
-        ? allTasks.filter(t => t.project_id === projectId)
-        : areaId 
-        ? allTasks.filter(t => t.area_id === areaId || (t.project_id && projects.find(p => p.id === t.project_id && p.area_id === areaId)))
-        : allTasks;
-      
-      await handleDrop(dragItem, dropZone, {
+      // Build the context for the unified drop handler
+      const dropContext = {
         targetIndex,
-        allTasks: relevantTasks.map(t => ({ id: t.id, sort_order: t.sort_order })),
+        allTasks: allTasks.map(t => ({ id: t.id, sort_order: t.sort_order })),
         targetProjectId: projectId || undefined,
         targetAreaId: areaId || undefined,
-      });
+      };
       
-      // Force refresh tasks data to ensure immediate UI updates
-      console.log('Task drop completed successfully - refreshing task data...');
+      console.log('🚀 Calling unified handleDrop with context:', dropContext);
+      await handleDrop(dragItem, dropZone, dropContext);
+      
+      console.log('✅ Drop completed successfully - refreshing data...');
       await refresh(); // Refresh the global task store
       
-      // Force a re-render by updating local state to pick up the new sort order
-      setProjects(prev => [...prev]); // Trigger re-render
-      setProjectsWithTasks(prev => [...prev]); // Trigger re-render of projects with tasks
-      
-      console.log('🔄 Task data refreshed after drop');
     } catch (error) {
-      console.error('Failed to handle task drop:', error);
-      // Refresh even on error to restore UI state
-      await refresh();
+      console.error('❌ Drop operation failed:', error);
+      await refresh(); // Refresh on error to restore UI state
     }
   };
 
@@ -325,7 +331,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
     };
 
     return (
-      <DropZone zone={dropZone} onDrop={handleTaskDrop} className="relative">
+      <DropZone zone={dropZone} onDrop={handleTaskListDrop} className="relative">
         <div className="space-y-0">
           {filteredTasks.map((task) => (
             <TaskItem
@@ -334,7 +340,6 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
               onToggle={() => handleToggle(task.id)}
               onDelete={() => handleDelete(task.id)}
               onEditTask={onEditTask}
-              onDrop={handleTaskDrop}
             />
           ))}
         </div>
@@ -363,7 +368,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
         
         const projectDropZone: DropZoneType = {
           id: `project-tasks-${project.id}`,
-          type: 'project',
+          type: 'task-list',
           accepts: ['task'],
           sectionRestriction: 'none'
         };
@@ -372,7 +377,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
           <div key={project.id} className="space-y-3">
             <ProjectHeader project={project} />
             
-            <DropZone zone={projectDropZone} onDrop={handleTaskDrop} className="relative">
+            <DropZone zone={projectDropZone} onDrop={handleTaskListDrop} className="relative">
               <div className="space-y-0">
                 {filteredTasks.map((task) => (
                   <TaskItem
@@ -381,8 +386,7 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
                     onToggle={() => handleToggle(task.id)}
                     onDelete={() => handleDelete(task.id)}
                     onEditTask={onEditTask}
-                    onDrop={handleTaskDrop}
-                  />
+                        />
                 ))}
               </div>
             </DropZone>

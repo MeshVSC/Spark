@@ -193,36 +193,82 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={handleKeyDown}
             className="w-full px-0 py-2 text-base border-none outline-none placeholder-gray-400"
-            placeholder="Quick task..."
+            placeholder="Spark..."
             autoFocus
           />
           
-          {/* Priority, Tags, and Scheduled Date */}
+          {/* Calendar, Search, Priority, and Tags */}
           <div className="space-y-2 mt-2">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowDatePicker(!showDatePicker);
+                }}
+                className={`p-1 rounded transition-colors ${
+                  dueDate ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                }`}
+                title="Set due date"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                </svg>
+              </button>
+              
+              {!dueDate ? (
+                <div className="flex items-center gap-1 relative">
+                  <div className="relative flex items-center">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="absolute left-2 z-10 pointer-events-none" style={{ color: 'var(--things-gray-400)' }}>
+                      <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-20 pl-6 pr-2 py-0 text-xs rounded-full outline-none bg-transparent border-none cursor-text"
+                      placeholder=""
+                      style={{ color: 'var(--things-gray-600)' }}
+                    />
+                  </div>
+                  {getSuggestion() && (
+                    <span className="text-xs font-medium ml-1" style={{ color: 'var(--things-gray-600)' }}>
+                      {getSuggestion()}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDueDate("");
+                    setSearchQuery("");
+                    setShowDatePicker(true);
+                  }}
+                  className="text-xs font-medium hover:bg-gray-100 px-1 py-0.5 rounded transition-colors"
+                  style={{ color: 'var(--things-gray-600)' }}
+                >
+                  {formatSelectedDate(dueDate)}
+                </button>
+              )}
+              
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as any)}
-                className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600 bg-white"
+                className="text-xs rounded-full px-3 py-1 text-gray-600 min-w-20 border-none outline-none bg-transparent"
               >
                 <option value="">Priority</option>
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
-              <input
-                type="date"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-                className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
-                title="Scheduled date"
-              />
             </div>
             <input
               type="text"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              className="w-full text-xs border border-gray-200 rounded px-2 py-1 text-gray-600"
+              className="w-full text-xs rounded-full px-3 py-1 text-gray-600 border-none outline-none bg-transparent"
               placeholder="Tags (work, urgent...)"
             />
           </div>
@@ -297,58 +343,7 @@ export function QuickEntry({ isVisible, onClose, projectId, areaId }: QuickEntry
           )}
           
           <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowDatePicker(!showDatePicker);
-                }}
-                className={`p-1 rounded transition-colors ${
-                  dueDate ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
-                }`}
-                title="Set due date"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                </svg>
-              </button>
-              
-              {!dueDate ? (
-                <div className="flex items-center gap-1">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--things-gray-400)' }}>
-                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                  </svg>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-16 px-1 py-0 text-xs border-none outline-none bg-transparent"
-                    placeholder=""
-                    style={{ color: 'var(--things-gray-600)' }}
-                  />
-                  {getSuggestion() && (
-                    <span className="text-xs font-medium ml-1" style={{ color: 'var(--things-gray-600)' }}>
-                      {getSuggestion()}
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDueDate("");
-                    setSearchQuery("");
-                    setShowDatePicker(true);
-                  }}
-                  className="text-xs font-medium hover:bg-gray-100 px-1 py-0.5 rounded transition-colors"
-                  style={{ color: 'var(--things-gray-600)' }}
-                >
-                  {formatSelectedDate(dueDate)}
-                </button>
-              )}
-            </div>
+            <div></div>
             <div className="flex gap-2">
               <button
                 type="button"

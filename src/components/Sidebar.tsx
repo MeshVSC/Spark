@@ -562,9 +562,12 @@ export function Sidebar({
               } transition-all duration-150`}
             >
               <div className="flex items-center w-full">
+                {!collapsed && (
+                  <div className="opacity-0 ml-2 mr-2 w-4 h-4" />
+                )}
                 <button
                   onClick={() => onViewChange(view.id)}
-                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
+                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 pl-0 pr-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
                     currentView === view.id ? 'text-gray-900' : ''
                   }`}
                   title={collapsed ? view.name : undefined}
@@ -609,9 +612,12 @@ export function Sidebar({
               } transition-all duration-150`}
             >
               <div className="flex items-center w-full">
+                {!collapsed && (
+                  <div className="opacity-0 ml-2 mr-2 w-4 h-4" />
+                )}
                 <button
                   onClick={() => onViewChange(view.id as any)}
-                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
+                  className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 pl-0 pr-4'} py-0.5 text-sm font-normal flex-1 text-gray-700 ${
                     currentView === view.id && !selectedProjectId && !selectedAreaId ? 'text-gray-900' : ''
                   }`}
                   title={collapsed ? view.name : undefined}
@@ -788,11 +794,6 @@ export function Sidebar({
                           </div>
                           
                           {/* Task count - aligned to right */}
-                          {settings.showProjectCounts && taskCount > 0 && (
-                            <span className="text-xs text-gray-400 font-medium mr-2">
-                              {taskCount}
-                            </span>
-                          )}
                           
                           {/* 3-dot menu for projects */}
                           <button
@@ -945,11 +946,6 @@ export function Sidebar({
                     </div>
                     
                     {/* Task count - aligned to right */}
-                    {settings.showProjectCounts && taskCount > 0 && (
-                      <span className="text-xs text-gray-400 font-medium mr-2">
-                        {taskCount}
-                      </span>
-                    )}
                     
                     {/* 3-dot menu for projects */}
                     <button
@@ -1087,9 +1083,10 @@ export function Sidebar({
         </div>
       </div>
 
-      <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
       </div>
       
+      {/* Settings modal - rendered outside sidebar to avoid width constraints */}
+      <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </>
   );
 }

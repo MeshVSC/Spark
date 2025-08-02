@@ -45,7 +45,7 @@ export function TaskFilters({ onFilterChange }: TaskFiltersProps) {
 
   return (
     <div className="mb-4">
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
         {filters.map((filter) => (
           <button
             key={filter.id}

@@ -12,7 +12,12 @@ export function Draggable({ item, children, className = '', disabled = false }: 
   const { startDrag, endDrag, isDragging, dragItem } = useDragDrop();
   
   const handleDragStart = (e: React.DragEvent) => {
-    console.log('🚨 DRAG START ATTEMPT:', { target: e.target, disabled });
+    console.log('🚨 DRAG START ATTEMPT:', { 
+      target: e.target, 
+      currentTarget: e.currentTarget,
+      disabled,
+      itemId: item.id 
+    });
     
     if (disabled) {
       console.log('❌ Drag disabled');
@@ -24,42 +29,64 @@ export function Draggable({ item, children, className = '', disabled = false }: 
     const target = e.target as HTMLElement;
     const currentTarget = e.currentTarget as HTMLElement;
     
-    // Check if any drag handle was marked during mousedown
-    const isDragHandleMarked = Array.from(currentTarget.querySelectorAll('.drag-handle')).some(
-      handle => (handle as any).__isDragHandle
-    );
+    // Check if target itself is marked as drag handle
+    const isTargetMarked = (target as any).__isDragHandle;
+    
+    // Check if any drag handle was marked during mousedown (traverse up the tree)
+    let element = target;
+    let foundMarkedHandle = false;
+    while (element && element !== currentTarget) {
+      if ((element as any).__isDragHandle) {
+        foundMarkedHandle = true;
+        break;
+      }
+      element = element.parentElement as HTMLElement;
+    }
     
     // Traditional detection as fallback
     const isDragHandle = target.closest('.drag-handle');
     
-    console.log('🔍 Handle check:', { 
+    console.log('🔍 Enhanced handle check:', { 
       target: target, 
       targetClass: target.className,
       targetTagName: target.tagName,
-      isDragHandleMarked,
+      isTargetMarked,
+      foundMarkedHandle,
       isDragHandle: !!isDragHandle,
-      // Additional debugging
-      targetHTML: target.outerHTML?.substring(0, 100),
-      closestDragHandle: isDragHandle?.outerHTML?.substring(0, 100)
+      // More detailed debugging
+      targetPath: target.outerHTML?.substring(0, 150),
+      allDragHandles: Array.from(currentTarget.querySelectorAll('.drag-handle')).length
     });
     
-    // Check if drag originated from handle using marker or traditional detection
-    const isFromHandle = isDragHandleMarked || isDragHandle;
+    // Check if drag originated from handle using any of our detection methods
+    const isFromHandle = isTargetMarked || foundMarkedHandle || isDragHandle;
     
-    if (!isFromHandle) {
+    // Enhanced check: if we have a drag handle in the element, allow dragging
+    const hasDragHandle = currentTarget.querySelector('.drag-handle') !== null;
+    
+    if (!isFromHandle && !hasDragHandle) {
       console.log('❌ No drag handle found, preventing drag');
       e.preventDefault();
       return;
     }
     
-    // Clear the marker
+    if (!isFromHandle && hasDragHandle) {
+      console.log('⚠️ Allowing drag due to presence of drag handle (fallback)');
+    }
+    
+    // Clear all markers to prevent interference
     Array.from(currentTarget.querySelectorAll('.drag-handle')).forEach(
-      handle => delete (handle as any).__isDragHandle
+      handle => {
+        delete (handle as any).__isDragHandle;
+        // Also clear from children
+        Array.from(handle.querySelectorAll('*')).forEach(child => {
+          delete (child as any).__isDragHandle;
+        });
+      }
     );
     
-    console.log('✅ Drag handle detected, allowing drag');
+    console.log('✅ Drag handle detected, allowing drag for item:', item.id);
     
-    console.log('✅ Starting drag for:', item);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', ''); // For Firefox compatibility
     startDrag(item);
@@ -173,7 +200,9 @@ export function DropZone({
     
     if (draggableElements.length > 0) {
       const mouseY = e.clientY;
-      let insertionIndex = 0;
+      let insertionIndex = draggableElements.length; // Default to end
+      
+      console.log('🖱️ Calculating insertion index:', { mouseY, elementCount: draggableElements.length });
       
       // Find the correct insertion point by comparing with each element
       for (let i = 0; i < draggableElements.length; i++) {
@@ -181,14 +210,24 @@ export function DropZone({
         const rect = element.getBoundingClientRect();
         const elementMiddle = rect.top + rect.height / 2;
         
+        console.log(`Element ${i}:`, { 
+          top: rect.top, 
+          bottom: rect.bottom, 
+          middle: elementMiddle, 
+          mouseY,
+          mouseBeforeMiddle: mouseY < elementMiddle 
+        });
+        
         if (mouseY < elementMiddle) {
           insertionIndex = i;
+          console.log(`🎯 Mouse before element ${i} middle, setting insertionIndex to ${i}`);
           break;
-        } else {
-          insertionIndex = i + 1;
         }
+        // If mouse is after this element's middle, continue to next element
+        // If this is the last element and mouse is after its middle, insertionIndex stays at length (end)
       }
       
+      console.log('📍 Final insertion index:', insertionIndex);
       setInsertionIndex(insertionIndex);
     } else {
       setInsertionIndex(0);
@@ -214,6 +253,7 @@ export function DropZone({
       dragItem, 
       isValidDropTarget,
       dragOverZone,
+      insertionIndex,
       eventTarget: e.target,
       eventCurrentTarget: e.currentTarget 
     });
@@ -222,20 +262,38 @@ export function DropZone({
     setDragOver(null);
     
     if (!isValidDropTarget || !dragItem) {
-      console.log('❌ Drop rejected:', { isValidDropTarget, dragItem, dragOverZone });
+      console.log('❌ Drop rejected:', { 
+        isValidDropTarget, 
+        dragItem, 
+        dragOverZone,
+        zoneAccepts: zone.accepts,
+        dragItemType: dragItem?.type 
+      });
       return;
     }
     
     // Use the calculated insertion index from drag over
     const targetIndex = insertionIndex ?? 0;
     
-    console.log('📍 Drop details:', { targetIndex, zone, dragItem });
+    console.log('📍 Drop details:', { 
+      targetIndex, 
+      zone: {
+        id: zone.id,
+        type: zone.type,
+        accepts: zone.accepts
+      }, 
+      dragItem: {
+        id: dragItem.id,
+        type: dragItem.type
+      },
+      containerElements: dropContainer?.querySelectorAll('[draggable="true"]').length || 0
+    });
     
     // Clear insertion indicator
     setInsertionIndex(null);
     setDropContainer(null);
     
-    console.log('🚀 Calling onDrop handler');
+    console.log('🚀 Calling onDrop handler with targetIndex:', targetIndex);
     onDrop?.(dragItem, zone, targetIndex);
     endDrag();
   };
@@ -278,8 +336,20 @@ export function DragHandle({ className = '' }: DragHandleProps) {
         justifyContent: 'center'
       }}
       onMouseDown={(e) => {
+        console.log('🎯 DragHandle onMouseDown triggered');
+        // Prevent event from bubbling to avoid conflicts
+        e.stopPropagation();
         // Mark this element as the drag handle for event bubbling
         (e.currentTarget as any).__isDragHandle = true;
+        // Also mark on the target for more reliable detection
+        (e.target as any).__isDragHandle = true;
+      }}
+      onTouchStart={(e) => {
+        console.log('📱 DragHandle onTouchStart triggered');
+        // Same handling for touch devices
+        e.stopPropagation();
+        (e.currentTarget as any).__isDragHandle = true;
+        (e.target as any).__isDragHandle = true;
       }}
     >
       <svg 

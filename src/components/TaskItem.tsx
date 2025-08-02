@@ -15,10 +15,9 @@ interface TaskItemProps {
   onToggle: () => void;
   onDelete: () => void;
   onEditTask: (taskId: string) => void;
-  onDrop?: (dragItem: DragItem, dropZone: DropZoneType, targetIndex?: number) => void;
 }
 
-export function TaskItem({ task, onToggle, onDelete, onEditTask, onDrop }: TaskItemProps) {
+export function TaskItem({ task, onToggle, onDelete, onEditTask }: TaskItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
@@ -87,7 +86,7 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask, onDrop }: TaskI
       >
         <div className="flex items-start gap-2">
           {/* Drag Handle */}
-          <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pt-1">
+          <div className="flex-shrink-0 opacity-50 group-hover:opacity-100 transition-opacity duration-150 pt-1">
             <DragHandle className="drag-handle" />
           </div>
 
@@ -108,7 +107,10 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask, onDrop }: TaskI
                 <div className="flex items-center gap-2 flex-wrap">
                   {/* Task title */}
                   <button
-                    onClick={() => onEditTask(task.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditTask(task.id);
+                    }}
                     className={`text-left font-medium text-gray-900 hover:text-blue-600 transition-colors ${task.completed ? "line-through text-gray-500" : ""}`}
                   >
                     <span className="task-title">{task.title}</span>
@@ -185,7 +187,10 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask, onDrop }: TaskI
               {/* Actions */}
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
-                  onClick={handleAddSubtask}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddSubtask();
+                  }}
                   className="text-gray-400 hover:text-blue-600 transition-colors p-1"
                   title="Add subtask"
                 >
@@ -195,7 +200,10 @@ export function TaskItem({ task, onToggle, onDelete, onEditTask, onDrop }: TaskI
                   </svg>
                 </button>
                 <button
-                  onClick={onDelete}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
                   className="text-gray-400 hover:text-red-500 transition-colors p-1"
                   title="Delete"
                 >

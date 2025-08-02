@@ -51,7 +51,7 @@ export default function App() {
         <ProjectStoreProvider>
           <AreaStoreProvider>
             <TaskNavigationProvider>
-              <div className="min-h-screen flex flex-col" style={{ background: '#FAFAFA' }}>
+              <div className="min-h-screen flex flex-col spark-gradient-bg">
             {user ? (
               <SparkApp />
             ) : (
@@ -61,7 +61,7 @@ export default function App() {
               <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8">
                 <div className="text-center mb-8">
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Spark</h1>
-                  <p className="text-gray-600">Get organized. Get focused. Get things done.</p>
+                  <p className="text-gray-600">Sometimes... that idea, that Spark.... That's all it takes.</p>
                 </div>
                 <SignInForm />
                 <div className="mt-8 text-center">
