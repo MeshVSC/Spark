@@ -298,10 +298,42 @@ export function TaskList({ view, projectId, areaId, filters = {}, onEditTask }: 
         context: { projectId, areaId }
       });
       
+      // For task reordering, we need to pass the filtered tasks that are actually being displayed
+      let relevantTasks: Task[];
+      
+      if (projectId) {
+        // Simple case: specific project
+        relevantTasks = allTasks.filter(t => t.project_id === projectId);
+        console.log('🎯 Project-specific filtering:', { projectId, taskCount: relevantTasks.length });
+      } else if (areaId) {
+        // Area case: include tasks directly in area AND tasks in projects within this area
+        const areaProjectIds = projects
+          .filter(p => p.area_id === areaId)
+          .map(p => p.id);
+        
+        relevantTasks = allTasks.filter(t => {
+          const isDirectlyInArea = t.area_id === areaId && !t.project_id;
+          const isInAreaProject = t.project_id && areaProjectIds.includes(t.project_id);
+          return isDirectlyInArea || isInAreaProject;
+        });
+        
+        console.log('🎯 Area-specific filtering:', { 
+          areaId, 
+          areaProjectIds, 
+          directAreaTasks: allTasks.filter(t => t.area_id === areaId && !t.project_id).length,
+          areaProjectTasks: allTasks.filter(t => t.project_id && areaProjectIds.includes(t.project_id)).length,
+          totalRelevantTasks: relevantTasks.length 
+        });
+      } else {
+        // All tasks (Sparks view)
+        relevantTasks = allTasks;
+        console.log('🎯 All tasks filtering:', { taskCount: relevantTasks.length });
+      }
+      
       // Build the context for the unified drop handler
       const dropContext = {
         targetIndex,
-        allTasks: allTasks.map(t => ({ id: t.id, sort_order: t.sort_order })),
+        allTasks: relevantTasks.map(t => ({ id: t.id, sort_order: t.sort_order })),
         targetProjectId: projectId || undefined,
         targetAreaId: areaId || undefined,
       };
