@@ -1,193 +1,119 @@
+// Run with: node add-new-mockup-data.js
 import { createClient } from '@supabase/supabase-js'
 import 'dotenv/config'
 
-// Supabase credentials from environment variables
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+if (!supabaseUrl || !supabaseAnonKey) throw new Error('Missing Supabase environment variables')
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Mock data
-const mockAreas = [
-  { name: 'Work', description: 'Professional projects and tasks', color: '#4F46E5' },
-  { name: 'Personal', description: 'Personal life and hobbies', color: '#059669' },
-  { name: 'Health & Fitness', description: 'Exercise and wellness goals', color: '#DC2626' },
-  { name: 'Learning', description: 'Educational and skill development', color: '#7C3AED' },
-  { name: 'Finance', description: 'Budget and financial planning', color: '#EA580C' }
+const areas = [
+  { name: 'Creativity Lab', description: 'R&D experiments and concept spikes', color: '#0EA5E9' },
+  { name: 'Family & Friends', description: 'Relationships, events, commitments', color: '#F43F5E' },
+  { name: 'Home & Maintenance', description: 'Repairs, chores, and household ops', color: '#22C55E' },
+  { name: 'Mindfulness', description: 'Well-being, meditation, journaling', color: '#A855F7' }
 ]
 
-const mockProjects = [
-  // Work projects
-  { name: 'Q1 Marketing Campaign', description: 'Launch new product marketing initiative', area: 'Work', color: '#3B82F6', priority: 'high' },
-  { name: 'Website Redesign', description: 'Update company website with modern design', area: 'Work', color: '#10B981', priority: 'medium' },
-  { name: 'Team Onboarding', description: 'Improve new hire experience', area: 'Work', color: '#8B5CF6', priority: 'low' },
-  
-  // Personal projects
-  { name: 'Home Renovation', description: 'Kitchen and living room updates', area: 'Personal', color: '#F59E0B', priority: 'medium' },
-  { name: 'Photography Portfolio', description: 'Create online portfolio website', area: 'Personal', color: '#EF4444', priority: 'low' },
-  { name: 'Garden Project', description: 'Plant vegetable garden this spring', area: 'Personal', color: '#84CC16', priority: 'medium' },
-  
-  // Health projects
-  { name: 'Marathon Training', description: 'Prepare for NYC Marathon', area: 'Health & Fitness', color: '#06B6D4', priority: 'high' },
-  { name: 'Meal Prep System', description: 'Establish weekly meal planning routine', area: 'Health & Fitness', color: '#F97316', priority: 'medium' },
-  
-  // Learning projects
-  { name: 'Spanish Language', description: 'Achieve conversational fluency', area: 'Learning', color: '#EC4899', priority: 'medium' },
-  { name: 'Data Science Course', description: 'Complete online certification', area: 'Learning', color: '#6366F1', priority: 'low' },
-  
-  // Finance projects
-  { name: 'Investment Portfolio', description: 'Diversify and rebalance investments', area: 'Finance', color: '#14B8A6', priority: 'high' },
-  { name: 'Emergency Fund', description: 'Build 6-month expense reserve', area: 'Finance', color: '#F59E0B', priority: 'medium' }
+const projects = [
+  { name: 'Rapid Prototype: Note-Taking AI', description: 'Validate OCR + summarization; define MVP.', color: '#0284C7', priority: 'high', area: 'Creativity Lab' },
+  { name: 'Autumn Family Gathering', description: 'Venue/catering/activities with budget guardrails.', color: '#FB7185', priority: 'medium', area: 'Family & Friends' },
+  { name: 'Kitchen Deep Refresh', description: 'Faucet, pantry organization, LED strips.', color: '#16A34A', priority: 'medium', area: 'Home & Maintenance' },
+  { name: '30-Day Mindfulness Reset', description: 'Daily practice + weekly reflections.', color: '#8B5CF6', priority: 'low', area: 'Mindfulness' }
 ]
 
-const mockTasks = [
-  // Q1 Marketing Campaign tasks
-  { title: 'Define target audience personas', project: 'Q1 Marketing Campaign', priority: 'high', completed: true },
-  { title: 'Create campaign messaging framework', project: 'Q1 Marketing Campaign', priority: 'high', completed: false },
-  { title: 'Design social media assets', project: 'Q1 Marketing Campaign', priority: 'medium', completed: false },
-  { title: 'Schedule influencer outreach calls', project: 'Q1 Marketing Campaign', priority: 'medium', completed: false },
-  { title: 'Set up analytics tracking', project: 'Q1 Marketing Campaign', priority: 'low', completed: true },
-  
-  // Website Redesign tasks
-  { title: 'Audit current website content', project: 'Website Redesign', priority: 'high', completed: true },
-  { title: 'Create wireframes for key pages', project: 'Website Redesign', priority: 'high', completed: false },
-  { title: 'Choose color palette and typography', project: 'Website Redesign', priority: 'medium', completed: false },
-  { title: 'Optimize images for web', project: 'Website Redesign', priority: 'low', completed: false },
-  
-  // Marathon Training tasks
-  { title: 'Create 16-week training schedule', project: 'Marathon Training', priority: 'high', completed: true },
-  { title: 'Buy proper running shoes', project: 'Marathon Training', priority: 'high', completed: true },
-  { title: 'Complete 8-mile long run', project: 'Marathon Training', priority: 'medium', completed: false },
-  { title: 'Track weekly mileage goals', project: 'Marathon Training', priority: 'medium', completed: false },
-  { title: 'Research race day nutrition', project: 'Marathon Training', priority: 'low', completed: false },
-  
-  // Home Renovation tasks
-  { title: 'Get contractor quotes', project: 'Home Renovation', priority: 'high', completed: false },
-  { title: 'Choose cabinet hardware', project: 'Home Renovation', priority: 'medium', completed: false },
-  { title: 'Select paint colors', project: 'Home Renovation', priority: 'low', completed: true },
-  { title: 'Order kitchen appliances', project: 'Home Renovation', priority: 'high', completed: false },
-  
-  // Spanish Language tasks
-  { title: 'Complete Duolingo lesson', project: 'Spanish Language', priority: 'medium', completed: true },
-  { title: 'Practice conversation with tutor', project: 'Spanish Language', priority: 'high', completed: false },
-  { title: 'Watch Spanish Netflix show', project: 'Spanish Language', priority: 'low', completed: false },
-  { title: 'Review vocabulary flashcards', project: 'Spanish Language', priority: 'medium', completed: false },
-  
-  // Investment Portfolio tasks
-  { title: 'Review current asset allocation', project: 'Investment Portfolio', priority: 'high', completed: true },
-  { title: 'Research international fund options', project: 'Investment Portfolio', priority: 'medium', completed: false },
-  { title: 'Rebalance portfolio quarterly', project: 'Investment Portfolio', priority: 'medium', completed: false },
-  { title: 'Set up automatic contributions', project: 'Investment Portfolio', priority: 'low', completed: true },
-  
-  // General tasks (not assigned to projects)
-  { title: 'Schedule dentist appointment', area: 'Health & Fitness', priority: 'medium', completed: false },
-  { title: 'File tax documents', area: 'Finance', priority: 'high', completed: false },
-  { title: 'Call mom for birthday', area: 'Personal', priority: 'high', completed: true },
-  { title: 'Update LinkedIn profile', area: 'Work', priority: 'low', completed: false },
-  { title: 'Organize photo albums', area: 'Personal', priority: 'low', completed: false },
-  { title: 'Research vacation destinations', area: 'Personal', priority: 'medium', completed: false },
-  { title: 'Update resume', area: 'Work', priority: 'medium', completed: false },
-  { title: 'Clean out garage', area: 'Personal', priority: 'low', completed: false }
+const tasks = [
+  { title: 'Define OCR vendor shortlist', notes: 'Accuracy/latency/price matrix', due_date: '2025-08-16T12:00:00Z', scheduled_date: '2025-08-12T09:30:00Z', priority: 'high', duration: 120, tags: ['ai','ocr','evaluation'], project: 'Rapid Prototype: Note-Taking AI', completed: false },
+  { title: 'Create pantry labeling system', notes: 'Taxonomy + placement for high-use items', due_date: '2025-09-05T17:00:00Z', scheduled_date: '2025-08-28T11:00:00Z', priority: 'medium', duration: 180, tags: ['organization','labels'], project: 'Kitchen Deep Refresh', completed: false },
+  { title: 'Call venue options', notes: 'Capacity, pricing, parking, availability', due_date: '2025-09-12T15:00:00Z', scheduled_date: '2025-09-01T17:00:00Z', priority: 'medium', duration: 90, tags: ['event','logistics'], area: 'Family & Friends', completed: false },
+  { title: 'Guided meditation session', notes: 'Evaluate tracks and set reminder', due_date: '2025-08-20T07:30:00Z', scheduled_date: '2025-08-10T07:30:00Z', priority: 'low', duration: 30, tags: ['habit','health'], area: 'Mindfulness', completed: false }
 ]
 
-async function addMockupData() {
+const subtasks = [
+  { title: 'OCR benchmark on 3 PDFs; capture accuracy/latency', parentTask: 'Define OCR vendor shortlist' },
+  { title: 'Draft pantry label taxonomy: staples/grains/snacks/baking/cans', parentTask: 'Create pantry labeling system' },
+  { title: 'Prepare venue call script: capacity, pricing, parking', parentTask: 'Call venue options' },
+  { title: 'Select 3 guided tracks; enable daily reminder', parentTask: 'Guided meditation session' }
+]
+
+const sparks = [
+  { title: 'Micro-journal in status bar', tags: ['ux','menubar'], priority: 'low', due_date: '2025-08-30T09:00:00Z' },
+  { title: 'Auto-tag photos by location', tags: ['vision','ml'], priority: 'medium', due_date: '2025-09-15T12:00:00Z' },
+  { title: 'Meeting TL;DR widget', tags: ['summary','productivity'], priority: 'high', due_date: '2025-08-25T08:00:00Z' },
+  { title: 'Expense receipt scanner', tags: ['fintech','ocr'], priority: 'medium', due_date: '2025-09-10T17:00:00Z' },
+  { title: 'Voice-to-tags for tasks', tags: ['voice','nlp'], priority: 'low', due_date: '2025-09-05T10:00:00Z' },
+  { title: 'Habit streak heatmap', tags: ['visualization','habit'], priority: 'low', due_date: '2025-08-27T07:00:00Z' },
+  { title: 'Smart pantry refill alert', tags: ['iot','home'], priority: 'medium', due_date: '2025-09-20T16:00:00Z' },
+  { title: 'Family event checklist pack', tags: ['template','events'], priority: 'low', due_date: '2025-09-07T18:00:00Z' },
+  { title: 'Mindful break nudge', tags: ['health','notification'], priority: 'low', due_date: '2025-08-22T14:00:00Z' },
+  { title: 'Research digest bot', tags: ['ai','search'], priority: 'high', due_date: '2025-09-01T09:00:00Z' }
+]
+
+async function addNewMockDataNode() {
   try {
-    console.log('Starting to add mockup data...')
-    
-    // First, get the current user
+    console.log('Starting (node) insert…')
+
     const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError || !user) {
-      console.error('User not authenticated:', userError)
-      return
-    }
-    
-    console.log('User authenticated:', user.email)
-    
-    // Add areas (folders)
-    console.log('Adding areas...')
+    if (userError || !user) { console.error('User not authenticated:', userError); return }
+    console.log('User:', user.email)
+
+    // Areas
     const areaMap = {}
-    for (const area of mockAreas) {
-      const { data, error } = await supabase
-        .from('areas')
-        .insert({
-          name: area.name,
-          description: area.description,
-          color: area.color,
-          user_id: user.id
-        })
-        .select()
-        .single()
-      
-      if (error) {
-        console.error('Error adding area:', area.name, error)
-      } else {
-        areaMap[area.name] = data.id
-        console.log('Added area:', area.name)
-      }
+    for (const a of areas) {
+      const { data, error } = await supabase.from('areas').insert({ name: a.name, description: a.description, color: a.color, user_id: user.id }).select().single()
+      if (error) console.error('Area error:', a.name, error); else { areaMap[a.name] = data.id; console.log('Area:', a.name) }
     }
-    
-    // Add projects
-    console.log('Adding projects...')
+
+    // Projects
     const projectMap = {}
-    for (const project of mockProjects) {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({
-          name: project.name,
-          description: project.description,
-          color: project.color,
-          priority: project.priority,
-          area_id: areaMap[project.area],
-          user_id: user.id
-        })
-        .select()
-        .single()
-      
-      if (error) {
-        console.error('Error adding project:', project.name, error)
-      } else {
-        projectMap[project.name] = data.id
-        console.log('Added project:', project.name)
-      }
+    for (const p of projects) {
+      const payload = { name: p.name, description: p.description, color: p.color, priority: p.priority, area_id: areaMap[p.area], user_id: user.id }
+      const { data, error } = await supabase.from('projects').insert(payload).select().single()
+      if (error) console.error('Project error:', p.name, error); else { projectMap[p.name] = data.id; console.log('Project:', p.name) }
     }
-    
-    // Add tasks
-    console.log('Adding tasks...')
-    for (const task of mockTasks) {
-      const taskData = {
-        title: task.title,
-        priority: task.priority,
-        completed: task.completed,
+
+    // Tasks
+    const taskMap = {}
+    for (const t of tasks) {
+      const row = {
+        title: t.title,
+        notes: t.notes,
+        due_date: t.due_date,
+        scheduled_date: t.scheduled_date,
+        priority: t.priority,
+        tags: t.tags,
+        duration: t.duration,
+        completed: t.completed,
         user_id: user.id
       }
-      
-      if (task.project) {
-        taskData.project_id = projectMap[task.project]
-      } else if (task.area) {
-        taskData.area_id = areaMap[task.area]
-      }
-      
-      const { error } = await supabase
-        .from('tasks')
-        .insert(taskData)
-      
-      if (error) {
-        console.error('Error adding task:', task.title, error)
-      } else {
-        console.log('Added task:', task.title)
-      }
+      if (t.project) row.project_id = projectMap[t.project]
+      if (t.area) row.area_id = areaMap[t.area]
+
+      const { data, error } = await supabase.from('tasks').insert(row).select().single()
+      if (error) console.error('Task error:', t.title, error); else { taskMap[t.title] = data.id; console.log('Task:', t.title) }
     }
-    
-    console.log('✅ Mockup data added successfully!')
-    console.log(`Added ${mockAreas.length} areas, ${mockProjects.length} projects, and ${mockTasks.length} tasks`)
-    
-  } catch (error) {
-    console.error('Error adding mockup data:', error)
+
+    // Subtasks
+    for (const st of subtasks) {
+      const parentId = taskMap[st.parentTask]
+      if (!parentId) { console.warn('Skipping subtask (parent not found):', st.title); continue }
+      const { error } = await supabase.from('subtasks').insert({ title: st.title, task_id: parentId, user_id: user.id })
+      if (error) console.error('Subtask error:', st.title, error); else console.log('Subtask:', st.title)
+    }
+
+    // Sparks (unassigned tasks)
+    for (const s of sparks) {
+      const { error } = await supabase.from('tasks').insert({
+        title: s.title, priority: s.priority, due_date: s.due_date, tags: s.tags, user_id: user.id, completed: false
+        // project_id and area_id intentionally NULL
+      })
+      if (error) console.error('Spark error:', s.title, error); else console.log('Spark:', s.title)
+    }
+
+    console.log('Done. Inserted 4 areas, 4 projects, 4 tasks, 4 subtasks, 10 sparks.')
+  } catch (e) {
+    console.error('Node insert failed:', e)
   }
 }
 
-addMockupData()
+addNewMockDataNode()
